@@ -37,6 +37,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
         $db = JFactory::getDbo();
         $lists = [];
 
+        //Start:Summary data
         $ug_name_id = $app->getUserStateFromRequest("plgJlmsSummaryReportsTab.ug_name", 'ug_name', '', 'cmd');
         $course_name_id = $app->getUserStateFromRequest("plgJlmsSummaryReportsTab.course_name", 'course_name', '', 'cmd');
 
@@ -79,6 +80,41 @@ class plgJlmsSummaryReportsTab extends JPlugin
         $pageNav->setAdditionalUrlParam('activetab', 'jlmsTabSummaryReport');
 
         $courses = self::getCourses();
+
+        //Start:Total data
+        $parent_groups = self::getGroups(false, true);
+        foreach ($parent_groups as $parent_group)
+        {
+            /*
+            $in = [$parent_group->id];
+            $child_groups = self::getGroups(false, false, $parent_group->id);
+            if (sizeof($child_groups))
+            {
+                foreach ($child_groups as $child_group) {
+                    $in[] = $child_group->id;
+                }
+
+            }*/
+            $query = $db->getQuery(true);
+            $query->select('u.block')
+                ->from('#__lms_users_in_global_groups AS gg')
+                ->innerJoin('#__users AS u ON u.id=gg.user_id')
+                ->where('gg.group_id='.$parent_group->id);
+            $db->setQuery($query);
+            $group_data = $db->loadColumn();
+            $parent_group->total_users = count($group_data);
+
+            $blocked_count = 0;
+            foreach ($group_data as $blocked) {
+                if($blocked==1)
+                {
+                    $blocked_count++;
+                }
+            }
+            $parent_group->total_blocked_users = $blocked_count;
+        }
+        echo '<pre>'; print_R($parent_groups);  echo '</pre>';
+
         if ($app->input->getCmd('download-summary-report') == "excel") {
             self::renderExcel($users, $courses);
         } else {
@@ -91,14 +127,24 @@ class plgJlmsSummaryReportsTab extends JPlugin
      * Get list of groups
      *
      * @param bool $with_default_item
+     * @param bool $only_parents
+     * @param bool $parent_id
      * @return array
      */
-    public function getGroups($with_default_item = false)
+    public function getGroups($with_default_item = false, $only_parents = false, $parent_id = false)
     {
         global $JLMS_DB;
 
         $query = $JLMS_DB->getQuery(true);
         $query->select('ug_name,id')->from('#__lms_usergroups');
+        if ($only_parents)
+        {
+            $query->where('parent_id=0');
+        }
+        if ($parent_id)
+        {
+            $query->where('parent_id='.$parent_id);
+        }
         $JLMS_DB->setQuery($query);
         $groups = (array)$JLMS_DB->loadObjectList();
 

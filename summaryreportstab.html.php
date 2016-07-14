@@ -23,6 +23,7 @@ class JLMS_SummaryReports_html
 
             });
         </script>
+        <h2>Summary statistics</h2>
         <form
             action="<?php echo sefRelToAbs($link); ?>"
             method="post" id="report-form-action" name="reportForm">
@@ -102,6 +103,82 @@ class JLMS_SummaryReports_html
             </table>
             <input type="hidden" id="download-summary-report" name="download-summary-report" value=""/>
         </form>
+
+        <div>
+            <h2>Parent groups statistics</h2>
+            <table width="100%" cellpadding="0" cellspacing="0" border="0"  class="table table-striped table-hover">
+                <tr>
+                    <th>Staff</th>
+                    <th>Excluded Staff</th>
+                    <th></th>
+                    <th>Group/Course</th>
+                    <?php
+                    foreach ($courses as $course) {
+                        echo '<th>' . $course->course_name . '</th>';
+                    }
+                    ?>
+                </tr>
+                <tr>
+                    <?php
+                        echo '<td>' . rand(0, 100) . '</td><td>' . rand(0, 100) . '</td>';
+                    ?>
+                    <td></td>
+                    <td>Viridian Group</td>
+                    <?php
+                    foreach ($courses as $course) {
+                        echo '<td>' . rand(0, 100) . '%</td>';
+                    }
+                    ?>
+                </tr>
+                <tr>
+                    <?php
+                    echo '<td>' . rand(0, 100) . '</td><td>' . rand(0, 100) . '</td>';
+                    ?>
+                    <td></td>
+                    <td>Energia Group</td>
+                    <?php
+                    foreach ($courses as $course) {
+                        echo '<td>' . rand(0, 100) . '%</td>';
+                    }
+                    ?>
+                </tr>
+                <tr>
+                    <?php
+                    echo '<td>' . rand(0, 100) . '</td><td>' . rand(0, 100) . '</td>';
+                    ?>
+                    <td></td>
+                    <td>PPB</td>
+                    <?php
+                    foreach ($courses as $course) {
+                        echo '<td>' . rand(0, 100) . '%</td>';
+                    }
+                    ?>
+                </tr>
+                <tr>
+                    <?php
+                    echo '<td>' . rand(0, 100) . '</td><td>' . rand(0, 100) . '</td>';
+                    ?>
+                    <td></td>
+                    <td>Power NI</td>
+                    <?php
+                    foreach ($courses as $course) {
+                        echo '<td>' . rand(0, 100) . '%</td>';
+                    }
+                    ?>
+                </tr>
+                <tr>
+                    <th><?=rand(0, 100)?></th>
+                    <th><?=rand(0, 100)?></th>
+                    <td></td>
+                    <th>Overall</th>
+                    <?php
+                    foreach ($courses as $course) {
+                        echo '<th>' . rand(0, 100) . '%</th>';
+                    }
+                    ?>
+                </tr>
+            </table>
+        </div>
     <?php
     }
 }
