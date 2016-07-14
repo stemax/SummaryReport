@@ -12,16 +12,16 @@ class plgJlmsSummaryReportsTab extends JPlugin
         parent::__construct($subject, $config);
     }
 
+    /***
+     * Run trigger to show tab
+     */
     public function onRenderTabHomepage()
     {
         $JLMS_ACL = JLMSFactory::getACL();
-        if ($JLMS_ACL->isTeacher() || $JLMS_ACL->isAdmin()) {
-
+        if ($JLMS_ACL->isAdmin()) {
             $titleTab = $this->params->get('title_tab', 'Summary Report');
             echo JHtml::_('bootstrap.addTab', 'JLMS', 'jlmsTabSummaryReport', JText::_($titleTab, true));
-            if ($JLMS_ACL->isAdmin()) {
-                self::JLMS_SummaryReportScorm();
-            }
+            self::JLMS_SummaryReportScorm();
             echo JHtml::_('bootstrap.endTab');
         }
     }
@@ -34,27 +34,24 @@ class plgJlmsSummaryReportsTab extends JPlugin
     public function JLMS_SummaryReportScorm()
     {
         $app = JFactory::getApplication();
-        $start_date = $app->getUserStateFromRequest("plgJlmsSummaryReportsTab.from_date", 'from_date', null, 'cmd');
-        $end_date = $app->getUserStateFromRequest("plgJlmsSummaryReportsTab.to_date", 'to_date', null, 'cmd');
+        $db = JFactory::getDbo();
+        $lists = [];
+
         $ug_name_id = $app->getUserStateFromRequest("plgJlmsSummaryReportsTab.ug_name", 'ug_name', '', 'cmd');
         $course_name_id = $app->getUserStateFromRequest("plgJlmsSummaryReportsTab.course_name", 'course_name', '', 'cmd');
 
-        $group_filter = mosHTML::selectList(self::getGroups(true), 'ug_name', 'class="inputbox" size="1" ', 'id', 'ug_name', $ug_name_id);
-        $courses_filter = mosHTML::selectList(self::getCourses(true), 'course_name', 'class="inputbox" size="1" ', 'id', 'course_name', $course_name_id);
-
-        $lists = array();
-        $lists['group'] = $group_filter;
-        $lists['course'] = $courses_filter;
-
-        $db = JFactory::getDbo();
+        $lists['group'] = mosHTML::selectList(self::getGroups(true), 'ug_name', 'class="inputbox" size="1" ', 'id', 'ug_name', $ug_name_id);;
+        $lists['course'] = mosHTML::selectList(self::getCourses(true), 'course_name', 'class="inputbox" size="1" ', 'id', 'course_name', $course_name_id);;
 
         $query = $db->getQuery(true);
-        $query->select('u.username, u.name, u.id, ug.ug_name, sug.ug_name AS `subgroup_name`')
+        $query->select('u.username, u.name, u.id, ug.ug_name, sug.ug_name AS `subgroup_name`, mu.name AS `manager_name`')
             ->from('#__users AS u')
             ->innerJoin('#__lms_users_in_groups AS g ON g.user_id = u.id')
             ->leftJoin('#__lms_users_in_global_groups AS gg ON gg.user_id = g.user_id')
             ->leftJoin('#__lms_usergroups AS ug ON ug.id = gg.group_id')
             ->leftJoin('#__lms_usergroups AS sug ON sug.id = gg.subgroup1_id')
+            ->leftJoin('#__lms_user_parents AS p ON p.user_id = u.id')
+            ->leftJoin('#__users AS mu ON mu.id = p.parent_id')
             //TODO filters by course and group
             ->group('u.id')
             ->order('u.username');
@@ -67,17 +64,13 @@ class plgJlmsSummaryReportsTab extends JPlugin
                 $query->select('course_id')
                     ->from('#__lms_certificate_users AS cer')
                     ->where('cer.user_id=' . $user->id)
-                    ->andWhere('cer.crt_option=1')//TODO filters by course
+                    ->andWhere('cer.crt_option=1')
+                    //TODO filters by course
                 ;
                 $db->setQuery($query);
                 $user->completed_courses = $db->loadColumn();
             }
-
         //echo '<pre>'; print_R($users);  echo '</pre>';
-
-        $lists['compl_date'] = mosGetParam($_REQUEST, 'compl_date ', 0);
-        $lists['from_date'] = JHTML::_('calendar', $start_date, 'from_date', 'from_date');
-        $lists['to_date'] = JHTML::_('calendar', $end_date, 'to_date', 'to_date');
 
         $limit = intval($app->getUserStateFromRequest("plgJlmsSummaryReportsTab.limit", 'limit', $app->getCfg('list_limit')));
         $limitstart = intval($app->getUserStateFromRequest("plgJlmsSummaryReportsTab.limitstart", 'limitstart', 0));
@@ -155,6 +148,8 @@ class plgJlmsSummaryReportsTab extends JPlugin
         $objPHPExcel = new \PHPExcel();
 
         $first_letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $users_count = count($users);
+        $courses_count = count($courses);
 
         $objPHPExcel->getProperties()->setCreator("Max Stemplevski")
             ->setLastModifiedBy("Max Stemplevski")
@@ -178,17 +173,17 @@ class plgJlmsSummaryReportsTab extends JPlugin
         $objPHPExcel->setActiveSheetIndex(0)
             ->setCellValue($first_letters[$active_letter_index++] . '1', 'Department')
             ->setCellValue($first_letters[$active_letter_index++] . '1', 'Organisation')
-            ->setCellValue($first_letters[$active_letter_index++] . '1', 'MD')
+            //->setCellValue($first_letters[$active_letter_index++] . '1', 'MD')
             ->setCellValue($first_letters[$active_letter_index++] . '1', 'Senior Manager')
-            ->setCellValue($first_letters[$active_letter_index++] . '1', 'Business')
+            //->setCellValue($first_letters[$active_letter_index++] . '1', 'Business')
             ->setCellValue($first_letters[$active_letter_index++] . '1', 'Comment')
-            ->setCellValue($first_letters[$active_letter_index++] . '1', 'Lookup Table')
-            ->setCellValue($first_letters[$active_letter_index++] . '1', 'All Courses Complete')
-            ->setCellValue($first_letters[$active_letter_index++] . '1', 'Include in Totals calcs');
+            //->setCellValue($first_letters[$active_letter_index++] . '1', 'Lookup Table')
+            //->setCellValue($first_letters[$active_letter_index++] . '1', 'All Courses Complete')
+            //->setCellValue($first_letters[$active_letter_index++] . '1', 'Include in Totals calcs')
+        ;
+        $objPHPExcel->getActiveSheet()->getStyle('A1:' . $first_letters[$active_letter_index] . '1')->getFont()->setBold(true);
 
-        $objPHPExcel->getActiveSheet()->getStyle('A1:Z1')->getFont()->setBold(true);
-
-        for ($i = 0; $i < strlen($first_letters); $i++) {
+        for ($i = 0; $i < $active_letter_index; $i++) {
             echo $first_letters[$i];
             $objPHPExcel->getActiveSheet()->getColumnDimension($first_letters[$i])->setAutoSize(true);
         }
@@ -204,14 +199,20 @@ class plgJlmsSummaryReportsTab extends JPlugin
             }
             $userdata[] = $user->ug_name;
             $userdata[] = $user->subgroup_name;
-            $userdata[] = '';
-            $userdata[] = $user->name;
+            //$userdata[] = '';
+            $userdata[] = $user->manager_name;
             $dataArray[] = $userdata;
         }
 
         $objPHPExcel->getActiveSheet()->fromArray($dataArray, NULL, 'A2');
         $objPHPExcel->getActiveSheet()->setAutoFilter($objPHPExcel->getActiveSheet()->calculateWorksheetDimension());
-        $objPHPExcel->getActiveSheet()->freezePane('D2');
+        $objPHPExcel->getActiveSheet()->freezePane('C2');
+
+        $active_letter_index = 1 + $courses_count;
+        $active_diapason_number = 1 + $users_count;
+        $objPHPExcel->getActiveSheet()->getStyle('C2:'.$first_letters[$active_letter_index].$active_diapason_number)->getAlignment()
+            ->setVertical(\PHPExcel_Style_Alignment::VERTICAL_CENTER)
+            ->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
 
         //Rename worksheet
         $objPHPExcel->getActiveSheet()->setTitle('Summary');
