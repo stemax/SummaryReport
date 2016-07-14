@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension version="3.0.0" type="plugin" group="jlms"  method="upgrade">
+	<name>JoomlaLMS - Summary Reports</name>
+	<author>JoomlaLMS Team</author>
+	<creationDate>12 July 2016</creationDate>
+	<copyright>(C) 2006 - 2016 JoomlaLMS</copyright>
+	<license> http://www.joomlalms.com/disclaimer-license-agreement.html</license>
+	<authorEmail>support@joomlalms.com</authorEmail>
+	<authorUrl>www.joomlalms.com</authorUrl>
+	<version>1.0.0</version>
+	<description>This plugins adds summmary reports tab on JoomlaLMS homepage</description>
+	<files>
+		<filename plugin="summaryreportstab">summaryreportstab.php</filename>
+		<filename>index.html</filename>
+		<filename>excel.php</filename>
+		<filename>summaryreportstab.html.php</filename>
+		<folder>lib</folder>
+	</files>
+</extension>
