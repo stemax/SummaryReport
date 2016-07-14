@@ -5,8 +5,6 @@ require_once("summaryreportstab.html.php");
 
 class plgJlmsSummaryReportsTab extends JPlugin
 {
-
-    const MIN_COL_WIDTH = 18;
     protected $autoloadLanguage = true;
 
     public function __construct(&$subject, $config = array())
@@ -28,6 +26,11 @@ class plgJlmsSummaryReportsTab extends JPlugin
         }
     }
 
+    /***
+     * Generate and collect data for summary report tab
+     *
+     * @throws Exception
+     */
     public function JLMS_SummaryReportScorm()
     {
         $app = JFactory::getApplication();
@@ -139,7 +142,13 @@ class plgJlmsSummaryReportsTab extends JPlugin
         return $courses;
     }
 
-    public function renderExcel($users,$courses)
+    /***
+     * Run render excel XLSX file
+     *
+     * @param $users
+     * @param $courses
+     */
+    public function renderExcel($users, $courses)
     {
         require_once("excel.php");
         Excel::init();
@@ -155,31 +164,27 @@ class plgJlmsSummaryReportsTab extends JPlugin
             ->setKeywords("office Coyle users results")
             ->setCategory("Coyle test result file");
 
-        // Add some data
-        //echo date('H:i:s'), " Add some data", EOL;
         $objPHPExcel->setActiveSheetIndex(0)
             ->setCellValue('A1', 'Ref')
-            ->setCellValue('B1', 'Firstname Lastname')
-        ;
+            ->setCellValue('B1', 'Firstname Lastname');
         $active_letter_index = 1;
         foreach ($courses as $course) {
             $active_letter_index++;
             $active_letter = $first_letters[$active_letter_index];
             $objPHPExcel->setActiveSheetIndex(0)
-                ->setCellValue($active_letter.'1', $course->course_name);
+                ->setCellValue($active_letter . '1', $course->course_name);
         }
         $active_letter_index++;
         $objPHPExcel->setActiveSheetIndex(0)
-            ->setCellValue($first_letters[$active_letter_index++].'1', 'Department')
-            ->setCellValue($first_letters[$active_letter_index++].'1', 'Organisation')
-            ->setCellValue($first_letters[$active_letter_index++].'1', 'MD')
-            ->setCellValue($first_letters[$active_letter_index++].'1', 'Senior Manager')
-            ->setCellValue($first_letters[$active_letter_index++].'1', 'Business')
-            ->setCellValue($first_letters[$active_letter_index++].'1', 'Comment')
-            ->setCellValue($first_letters[$active_letter_index++].'1', 'Lookup Table')
-            ->setCellValue($first_letters[$active_letter_index++].'1', 'All Courses Complete')
-            ->setCellValue($first_letters[$active_letter_index++].'1', 'Include in Totals calcs')
-            ;
+            ->setCellValue($first_letters[$active_letter_index++] . '1', 'Department')
+            ->setCellValue($first_letters[$active_letter_index++] . '1', 'Organisation')
+            ->setCellValue($first_letters[$active_letter_index++] . '1', 'MD')
+            ->setCellValue($first_letters[$active_letter_index++] . '1', 'Senior Manager')
+            ->setCellValue($first_letters[$active_letter_index++] . '1', 'Business')
+            ->setCellValue($first_letters[$active_letter_index++] . '1', 'Comment')
+            ->setCellValue($first_letters[$active_letter_index++] . '1', 'Lookup Table')
+            ->setCellValue($first_letters[$active_letter_index++] . '1', 'All Courses Complete')
+            ->setCellValue($first_letters[$active_letter_index++] . '1', 'Include in Totals calcs');
 
         $objPHPExcel->getActiveSheet()->getStyle('A1:Z1')->getFont()->setBold(true);
 
@@ -195,7 +200,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
             $userdata[] = $user->name;
             foreach ($courses as $course) {
                 $completed_courses = $user->completed_courses;
-                $userdata[] = (in_array($course->id,$completed_courses)?'Y':'N');
+                $userdata[] = (in_array($course->id, $completed_courses) ? 'Y' : 'N');
             }
             $userdata[] = $user->ug_name;
             $userdata[] = $user->subgroup_name;
@@ -208,8 +213,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
         $objPHPExcel->getActiveSheet()->setAutoFilter($objPHPExcel->getActiveSheet()->calculateWorksheetDimension());
         $objPHPExcel->getActiveSheet()->freezePane('D2');
 
-        // Rename worksheet
-        echo date('H:i:s'), " Rename worksheet", EOL;
+        //Rename worksheet
         $objPHPExcel->getActiveSheet()->setTitle('Summary');
 
         /***2ND worksheet start**/
