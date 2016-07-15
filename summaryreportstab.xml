@@ -16,4 +16,20 @@
 		<filename>summaryreportstab.html.php</filename>
 		<folder>lib</folder>
 	</files>
+    <config>
+        <fields name="params">
+
+            <fieldset name="basic">
+                <field
+                        name="courses_ids"
+                        type="text"
+                        label="Courses ids"
+                        description="Allowed courses IDs for summary report (comma separated)"
+                        default=""
+                        size="15"
+                        />
+            </fieldset>
+
+        </fields>
+    </config>
 </extension>
