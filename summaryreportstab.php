@@ -96,22 +96,40 @@ class plgJlmsSummaryReportsTab extends JPlugin
 
             }*/
             $query = $db->getQuery(true);
-            $query->select('u.block')
+            $query->select('u.id,u.block')
                 ->from('#__lms_users_in_global_groups AS gg')
                 ->innerJoin('#__users AS u ON u.id=gg.user_id')
                 ->where('gg.group_id='.$parent_group->id);
             $db->setQuery($query);
-            $group_data = $db->loadColumn();
+            $group_data = $db->loadObjectList();
             $parent_group->total_users = count($group_data);
 
             $blocked_count = 0;
-            foreach ($group_data as $blocked) {
-                if($blocked==1)
+            $active_users = [];
+            foreach ($group_data as $user) {
+                if($user->block==1)
                 {
                     $blocked_count++;
+                }else{
+                    $active_users[] = $user->id;
                 }
             }
             $parent_group->total_blocked_users = $blocked_count;
+
+            $parent_group->total_completed = 0;
+            if (sizeof($active_users))
+            {
+                $query = $db->getQuery(true);
+                $query->select('COUNT(id)')
+                    ->from('#__lms_certificate_users AS cer')
+                    ->where('cer.user_id IN (' . implode(',',$active_users).')')
+                    ->andWhere('cer.crt_option=1')
+                    //TODO filters by course
+                ;
+                $db->setQuery($query);
+                $parent_group->total_completed = $db->loadResult();
+            }
+
         }
         echo '<pre>'; print_R($parent_groups);  echo '</pre>';
 
