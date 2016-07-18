@@ -5,7 +5,7 @@ defined('_JLMS_EXEC') or die('Restricted access');
 class JLMS_SummaryReports_html
 {
 
-    static function showSummaryReport($rows, $courses, $pageNav, $lists)
+    static function showSummaryReport($rows, $courses, $parent_groups, $pageNav, $lists)
     {
         global $Itemid;
         $link = "index.php?option=com_joomla_lms&task=default&Itemid=$Itemid&activetab=jlmsTabSummaryReport";
@@ -103,7 +103,13 @@ class JLMS_SummaryReports_html
             </table>
             <input type="hidden" id="download-summary-report" name="download-summary-report" value=""/>
         </form>
-
+        <?php
+        echo '<pre>'; print_R($parent_groups);  echo '</pre>';
+        $total_staff = $total_excluded_staff = 0;
+        foreach ($courses as $course) {
+            $total_overall[$course->id] = 0;
+        }
+        ?>
         <div>
             <h2>Parent groups statistics</h2>
             <table width="100%" cellpadding="0" cellspacing="0" border="0"  class="table table-striped table-hover">
@@ -118,62 +124,38 @@ class JLMS_SummaryReports_html
                     }
                     ?>
                 </tr>
+                <?php
+                foreach ($parent_groups as $parent_group) {
+                    ?>
+                    <tr>
+                        <?php
+                        $total_staff += $parent_group->total_users;
+                        $total_excluded_staff += $parent_group->total_blocked_users;
+                        echo '<td>' . $parent_group->total_users . '</td><td>' . $parent_group->total_blocked_users . '</td>';
+                        $diff_total_excl = $parent_group->total_users - $parent_group->total_blocked_users;
+                        ?>
+                        <td></td>
+                        <td><?=$parent_group->ug_name;?></td>
+                        <?php
+                        foreach ($courses as $course) {
+                            echo '<td>' .($parent_group->total[$course->id]?($parent_group->total[$course->id]/$diff_total_excl*100):0) . '%</td>';
+                            $total_overall[$course->id] += $parent_group->total[$course->id];
+                        }
+                        ?>
+                    </tr>
+                <?php
+                }
+                ?>
+
                 <tr>
-                    <?php
-                        echo '<td>' . rand(0, 100) . '</td><td>' . rand(0, 100) . '</td>';
-                    ?>
-                    <td></td>
-                    <td>Viridian Group</td>
-                    <?php
-                    foreach ($courses as $course) {
-                        echo '<td>' . rand(0, 100) . '%</td>';
-                    }
-                    ?>
-                </tr>
-                <tr>
-                    <?php
-                    echo '<td>' . rand(0, 100) . '</td><td>' . rand(0, 100) . '</td>';
-                    ?>
-                    <td></td>
-                    <td>Energia Group</td>
-                    <?php
-                    foreach ($courses as $course) {
-                        echo '<td>' . rand(0, 100) . '%</td>';
-                    }
-                    ?>
-                </tr>
-                <tr>
-                    <?php
-                    echo '<td>' . rand(0, 100) . '</td><td>' . rand(0, 100) . '</td>';
-                    ?>
-                    <td></td>
-                    <td>PPB</td>
-                    <?php
-                    foreach ($courses as $course) {
-                        echo '<td>' . rand(0, 100) . '%</td>';
-                    }
-                    ?>
-                </tr>
-                <tr>
-                    <?php
-                    echo '<td>' . rand(0, 100) . '</td><td>' . rand(0, 100) . '</td>';
-                    ?>
-                    <td></td>
-                    <td>Power NI</td>
-                    <?php
-                    foreach ($courses as $course) {
-                        echo '<td>' . rand(0, 100) . '%</td>';
-                    }
-                    ?>
-                </tr>
-                <tr>
-                    <th><?=rand(0, 100)?></th>
-                    <th><?=rand(0, 100)?></th>
+                    <th><?=$total_staff;?></th>
+                    <th><?=$total_excluded_staff;?></th>
                     <td></td>
                     <th>Overall</th>
                     <?php
+                    $diff_total_excl = $total_staff - $total_excluded_staff;
                     foreach ($courses as $course) {
-                        echo '<th>' . rand(0, 100) . '%</th>';
+                        echo '<th>' . ($total_overall[$course->id] ?($total_overall[$course->id]/$diff_total_excl*100):0). '%</th>';
                     }
                     ?>
                 </tr>

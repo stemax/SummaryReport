@@ -7,7 +7,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
 {
     protected $autoloadLanguage = true;
 
-    public function __construct(&$subject, $config = array())
+    public function __construct(&$subject, $config = [])
     {
         parent::__construct($subject, $config);
     }
@@ -117,27 +117,41 @@ class plgJlmsSummaryReportsTab extends JPlugin
             $parent_group->total_blocked_users = $blocked_count;
 
             $parent_group->total_completed = 0;
+            foreach ($courses as $course) {
+                $parent_group->total[$course->id] = 0;
+            }
+
             if (sizeof($active_users))
             {
                 $query = $db->getQuery(true);
                 $query->select('COUNT(id)')
                     ->from('#__lms_certificate_users AS cer')
-                    ->where('cer.user_id IN (' . implode(',',$active_users).')')
-                    ->andWhere('cer.crt_option=1')
-                    //TODO filters by course
+                    ->where('cer.user_id IN (' . implode(',', $active_users) . ')')
+                    ->andWhere('cer.crt_option=1')//TODO filters by course
                 ;
                 $db->setQuery($query);
                 $parent_group->total_completed = $db->loadResult();
+
+                foreach ($courses as $course) {
+                    $query = $db->getQuery(true);
+                    $query->select('COUNT(id)')
+                        ->from('#__lms_certificate_users AS cer')
+                        ->where('cer.user_id IN (' . implode(',', $active_users) . ')')
+                        ->andWhere('cer.course_id=' . $course->id)
+                        ->andWhere('cer.crt_option=1')//TODO filters by course
+                    ;
+                    $db->setQuery($query);
+                    $parent_group->total[$course->id] = $db->loadResult();
+                }
             }
 
         }
-        echo '<pre>'; print_R($parent_groups);  echo '</pre>';
 
         if ($app->input->getCmd('download-summary-report') == "excel") {
             self::renderExcel($users, $courses);
         } else {
             $users = array_slice($users, $pageNav->limitstart, $pageNav->limit);
-            JLMS_SummaryReports_html::showSummaryReport($users, $courses, $pageNav, $lists);
+            JLMS_SummaryReports_html::showSummaryReport($users, $courses, $parent_groups, $pageNav, $lists);
         }
     }
 
