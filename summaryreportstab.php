@@ -85,16 +85,6 @@ class plgJlmsSummaryReportsTab extends JPlugin
         $parent_groups = self::getGroups(false, true);
         foreach ($parent_groups as $parent_group)
         {
-            /*
-            $in = [$parent_group->id];
-            $child_groups = self::getGroups(false, false, $parent_group->id);
-            if (sizeof($child_groups))
-            {
-                foreach ($child_groups as $child_group) {
-                    $in[] = $child_group->id;
-                }
-
-            }*/
             $query = $db->getQuery(true);
             $query->select('u.id,u.block')
                 ->from('#__lms_users_in_global_groups AS gg')
@@ -143,6 +133,64 @@ class plgJlmsSummaryReportsTab extends JPlugin
                     $db->setQuery($query);
                     $parent_group->total[$course->id] = $db->loadResult();
                 }
+            }
+
+            $child_groups = self::getGroups(false, false, $parent_group->id);
+            if (sizeof($child_groups))
+            {
+                foreach ($child_groups as $child_group) {
+                    $query = $db->getQuery(true);
+                    $query->select('u.id,u.block')
+                        ->from('#__lms_users_in_global_groups AS gg')
+                        ->innerJoin('#__users AS u ON u.id=gg.user_id')
+                        ->where('gg.subgroup1_id='.$child_group->id);
+                    $db->setQuery($query);
+                    $group_data = $db->loadObjectList();
+                    $child_group->total_users = count($group_data);
+
+                    $blocked_count = 0;
+                    $active_users = [];
+                    foreach ($group_data as $user) {
+                        if($user->block==1)
+                        {
+                            $blocked_count++;
+                        }else{
+                            $active_users[] = $user->id;
+                        }
+                    }
+                    $child_group->total_blocked_users = $blocked_count;
+
+                    $child_group->total_completed = 0;
+                    foreach ($courses as $course) {
+                        $child_group->total[$course->id] = 0;
+                    }
+
+                    if (sizeof($active_users))
+                    {
+                        $query = $db->getQuery(true);
+                        $query->select('COUNT(id)')
+                            ->from('#__lms_certificate_users AS cer')
+                            ->where('cer.user_id IN (' . implode(',', $active_users) . ')')
+                            ->andWhere('cer.crt_option=1')//TODO filters by course
+                        ;
+                        $db->setQuery($query);
+                        $child_group->total_completed = $db->loadResult();
+
+                        foreach ($courses as $course) {
+                            $query = $db->getQuery(true);
+                            $query->select('COUNT(id)')
+                                ->from('#__lms_certificate_users AS cer')
+                                ->where('cer.user_id IN (' . implode(',', $active_users) . ')')
+                                ->andWhere('cer.course_id=' . $course->id)
+                                ->andWhere('cer.crt_option=1')//TODO filters by course
+                            ;
+                            $db->setQuery($query);
+                            $child_group->total[$course->id] = $db->loadResult();
+                        }
+                    }
+                }
+                $parent_group->child_groups = $child_groups;
+
             }
 
         }
