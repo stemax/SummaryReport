@@ -6,9 +6,18 @@ require_once("summaryreportstab.html.php");
 class plgJlmsSummaryReportsTab extends JPlugin
 {
     protected $autoloadLanguage = true;
+    static private $allowed_courses_ids = [];
 
     public function __construct(&$subject, $config = [])
     {
+        $plugin = JPluginHelper::getPlugin('jlms', 'summaryreportstab');
+        $params = json_decode($plugin->params);
+        $param_courses_ids = $params->courses_ids;
+        if ($param_courses_ids)
+        {
+            self::$allowed_courses_ids = explode(',',$param_courses_ids);
+        }
+
         parent::__construct($subject, $config);
     }
 
@@ -21,7 +30,13 @@ class plgJlmsSummaryReportsTab extends JPlugin
         if ($JLMS_ACL->isAdmin()) {
             $titleTab = $this->params->get('title_tab', 'Summary Report');
             echo JHtml::_('bootstrap.addTab', 'JLMS', 'jlmsTabSummaryReport', JText::_($titleTab, true));
-            self::JLMS_SummaryReportScorm();
+            if (sizeof(self::$allowed_courses_ids))
+            {
+                self::JLMS_SummaryReportScorm();
+            }else
+            {
+                echo '<strong>For generating summary report, you need to add courses ids in plugin params, please.</strong>';
+            }
             echo JHtml::_('bootstrap.endTab');
         }
     }
@@ -56,6 +71,10 @@ class plgJlmsSummaryReportsTab extends JPlugin
             //TODO filters by course and group
             ->group('u.id')
             ->order('u.username');
+        if ($ug_name_id)
+        {
+            $query->where('gg.group_id='.$ug_name_id.' OR gg.subgroup1_id='.$ug_name_id);
+        }
         $db->setQuery($query);
         $users = $db->LoadObjectList();
 
@@ -65,8 +84,13 @@ class plgJlmsSummaryReportsTab extends JPlugin
                 $query->select('course_id')
                     ->from('#__lms_certificate_users AS cer')
                     ->where('cer.user_id=' . $user->id)
-                    ->andWhere('cer.crt_option=1')//TODO filters by course
+                    ->andWhere('cer.crt_option=1')
+                    ->andWhere('course_id IN ('.implode(',', self::$allowed_courses_ids).')')
                 ;
+                if ($course_name_id)
+                {
+                    $query->andWhere('course_id='.$course_name_id);
+                }
                 $db->setQuery($query);
                 $user->completed_courses = $db->loadColumn();
             }
@@ -240,8 +264,15 @@ class plgJlmsSummaryReportsTab extends JPlugin
     {
         global $JLMS_DB;
 
+        $app = JFactory::getApplication();
+        $course_name_id = $app->getUserStateFromRequest("plgJlmsSummaryReportsTab.course_name", 'course_name', '', 'cmd');
+
         $query = $JLMS_DB->getQuery(true);
-        $query->select('course_name,id')->from('#__lms_courses');
+        $query->select('course_name,id')->from('#__lms_courses')->where('id IN ('.implode(',', self::$allowed_courses_ids).')');
+        if ($course_name_id && !$with_default_item)
+        {
+            $query->andWhere('id='.$course_name_id);
+        }
         $JLMS_DB->setQuery($query);
         $courses = (array)$JLMS_DB->loadObjectList();
 
