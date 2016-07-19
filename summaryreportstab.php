@@ -65,8 +65,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
                 $query->select('course_id')
                     ->from('#__lms_certificate_users AS cer')
                     ->where('cer.user_id=' . $user->id)
-                    ->andWhere('cer.crt_option=1')
-                    //TODO filters by course
+                    ->andWhere('cer.crt_option=1')//TODO filters by course
                 ;
                 $db->setQuery($query);
                 $user->completed_courses = $db->loadColumn();
@@ -83,13 +82,12 @@ class plgJlmsSummaryReportsTab extends JPlugin
 
         //Start:Total data
         $parent_groups = self::getGroups(false, true);
-        foreach ($parent_groups as $parent_group)
-        {
+        foreach ($parent_groups as $parent_group) {
             $query = $db->getQuery(true);
             $query->select('u.id,u.block')
                 ->from('#__lms_users_in_global_groups AS gg')
                 ->innerJoin('#__users AS u ON u.id=gg.user_id')
-                ->where('gg.group_id='.$parent_group->id);
+                ->where('gg.group_id=' . $parent_group->id);
             $db->setQuery($query);
             $group_data = $db->loadObjectList();
             $parent_group->total_users = count($group_data);
@@ -97,10 +95,9 @@ class plgJlmsSummaryReportsTab extends JPlugin
             $blocked_count = 0;
             $active_users = [];
             foreach ($group_data as $user) {
-                if($user->block==1)
-                {
+                if ($user->block == 1) {
                     $blocked_count++;
-                }else{
+                } else {
                     $active_users[] = $user->id;
                 }
             }
@@ -111,8 +108,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
                 $parent_group->total[$course->id] = 0;
             }
 
-            if (sizeof($active_users))
-            {
+            if (sizeof($active_users)) {
                 $query = $db->getQuery(true);
                 $query->select('COUNT(id)')
                     ->from('#__lms_certificate_users AS cer')
@@ -136,14 +132,13 @@ class plgJlmsSummaryReportsTab extends JPlugin
             }
 
             $child_groups = self::getGroups(false, false, $parent_group->id);
-            if (sizeof($child_groups))
-            {
+            if (sizeof($child_groups)) {
                 foreach ($child_groups as $child_group) {
                     $query = $db->getQuery(true);
                     $query->select('u.id,u.block')
                         ->from('#__lms_users_in_global_groups AS gg')
                         ->innerJoin('#__users AS u ON u.id=gg.user_id')
-                        ->where('gg.subgroup1_id='.$child_group->id);
+                        ->where('gg.subgroup1_id=' . $child_group->id);
                     $db->setQuery($query);
                     $group_data = $db->loadObjectList();
                     $child_group->total_users = count($group_data);
@@ -151,10 +146,9 @@ class plgJlmsSummaryReportsTab extends JPlugin
                     $blocked_count = 0;
                     $active_users = [];
                     foreach ($group_data as $user) {
-                        if($user->block==1)
-                        {
+                        if ($user->block == 1) {
                             $blocked_count++;
-                        }else{
+                        } else {
                             $active_users[] = $user->id;
                         }
                     }
@@ -165,8 +159,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
                         $child_group->total[$course->id] = 0;
                     }
 
-                    if (sizeof($active_users))
-                    {
+                    if (sizeof($active_users)) {
                         $query = $db->getQuery(true);
                         $query->select('COUNT(id)')
                             ->from('#__lms_certificate_users AS cer')
@@ -209,6 +202,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
      * @param bool $with_default_item
      * @param bool $only_parents
      * @param bool $parent_id
+     *
      * @return array
      */
     public function getGroups($with_default_item = false, $only_parents = false, $parent_id = false)
@@ -217,13 +211,11 @@ class plgJlmsSummaryReportsTab extends JPlugin
 
         $query = $JLMS_DB->getQuery(true);
         $query->select('ug_name,id')->from('#__lms_usergroups');
-        if ($only_parents)
-        {
+        if ($only_parents) {
             $query->where('parent_id=0');
         }
-        if ($parent_id)
-        {
-            $query->where('parent_id='.$parent_id);
+        if ($parent_id) {
+            $query->where('parent_id=' . $parent_id);
         }
         $JLMS_DB->setQuery($query);
         $groups = (array)$JLMS_DB->loadObjectList();
@@ -241,6 +233,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
      * Get list of courses
      *
      * @param bool $with_default_item
+     *
      * @return array
      */
     public function getCourses($with_default_item = false)
@@ -336,7 +329,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
 
         $active_letter_index = 1 + $courses_count;
         $active_diapason_number = 1 + $users_count;
-        $objPHPExcel->getActiveSheet()->getStyle('C2:'.$first_letters[$active_letter_index].$active_diapason_number)->getAlignment()
+        $objPHPExcel->getActiveSheet()->getStyle('C2:' . $first_letters[$active_letter_index] . $active_diapason_number)->getAlignment()
             ->setVertical(\PHPExcel_Style_Alignment::VERTICAL_CENTER)
             ->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
 
