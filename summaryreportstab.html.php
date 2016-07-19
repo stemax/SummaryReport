@@ -104,16 +104,24 @@ class JLMS_SummaryReports_html
             <input type="hidden" id="download-summary-report" name="download-summary-report" value=""/>
         </form>
         <?php
-        echo '<pre>';
-        print_R($parent_groups);
-        echo '</pre>';
+        self::showTotalTable($parent_groups, $courses, 'Parent groups statistics');
+        foreach ($parent_groups as $parent_group) {
+            if (isset($parent_group->child_groups)) {
+                 self::showTotalTable($parent_group->child_groups, $courses, $parent_group->ug_name);
+            }
+        }
+
+    }
+
+    static function showTotalTable($results, $courses, $caption = '')
+    {
         $total_staff = $total_excluded_staff = 0;
         foreach ($courses as $course) {
             $total_overall[$course->id] = 0;
         }
         ?>
         <div>
-            <h2>Parent groups statistics</h2>
+            <h2><?= $caption ?></h2>
             <table width="100%" cellpadding="0" cellspacing="0" border="0" class="table table-striped table-hover">
                 <tr>
                     <th>Staff</th>
@@ -127,21 +135,21 @@ class JLMS_SummaryReports_html
                     ?>
                 </tr>
                 <?php
-                foreach ($parent_groups as $parent_group) {
+                foreach ($results as $result) {
                     ?>
                     <tr>
                         <?php
-                        $total_staff += $parent_group->total_users;
-                        $total_excluded_staff += $parent_group->total_blocked_users;
-                        echo '<td>' . $parent_group->total_users . '</td><td>' . $parent_group->total_blocked_users . '</td>';
-                        $diff_total_excl = $parent_group->total_users - $parent_group->total_blocked_users;
+                        $total_staff += $result->total_users;
+                        $total_excluded_staff += $result->total_blocked_users;
+                        echo '<td>' . $result->total_users . '</td><td>' . $result->total_blocked_users . '</td>';
+                        $diff_total_excl = $result->total_users - $result->total_blocked_users;
                         ?>
                         <td></td>
-                        <td><?= $parent_group->ug_name; ?></td>
+                        <td><?= $result->ug_name; ?></td>
                         <?php
                         foreach ($courses as $course) {
-                            echo '<td>' . ($parent_group->total[$course->id] ? ($parent_group->total[$course->id] / $diff_total_excl * 100) : 0) . '%</td>';
-                            $total_overall[$course->id] += $parent_group->total[$course->id];
+                            echo '<td>' . ($result->total[$course->id] ? ($result->total[$course->id] / $diff_total_excl * 100) : 0) . '%</td>';
+                            $total_overall[$course->id] += $result->total[$course->id];
                         }
                         ?>
                     </tr>

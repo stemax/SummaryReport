@@ -81,16 +81,16 @@ class plgJlmsSummaryReportsTab extends JPlugin
         $courses = self::getCourses();
 
         //Start:Total data
-        $parent_groups = self::getGroups(false, true);
-        foreach ($parent_groups as $parent_group) {
+        $groups_results = self::getGroups(false, true);
+        foreach ($groups_results as $groups_result) {
             $query = $db->getQuery(true);
             $query->select('u.id,u.block')
                 ->from('#__lms_users_in_global_groups AS gg')
                 ->innerJoin('#__users AS u ON u.id=gg.user_id')
-                ->where('gg.group_id=' . $parent_group->id);
+                ->where('gg.group_id=' . $groups_result->id);
             $db->setQuery($query);
             $group_data = $db->loadObjectList();
-            $parent_group->total_users = count($group_data);
+            $groups_result->total_users = count($group_data);
 
             $blocked_count = 0;
             $active_users = [];
@@ -101,11 +101,11 @@ class plgJlmsSummaryReportsTab extends JPlugin
                     $active_users[] = $user->id;
                 }
             }
-            $parent_group->total_blocked_users = $blocked_count;
+            $groups_result->total_blocked_users = $blocked_count;
 
-            $parent_group->total_completed = 0;
+            $groups_result->total_completed = 0;
             foreach ($courses as $course) {
-                $parent_group->total[$course->id] = 0;
+                $groups_result->total[$course->id] = 0;
             }
 
             if (sizeof($active_users)) {
@@ -116,7 +116,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
                     ->andWhere('cer.crt_option=1')//TODO filters by course
                 ;
                 $db->setQuery($query);
-                $parent_group->total_completed = $db->loadResult();
+                $groups_result->total_completed = $db->loadResult();
 
                 foreach ($courses as $course) {
                     $query = $db->getQuery(true);
@@ -127,11 +127,11 @@ class plgJlmsSummaryReportsTab extends JPlugin
                         ->andWhere('cer.crt_option=1')//TODO filters by course
                     ;
                     $db->setQuery($query);
-                    $parent_group->total[$course->id] = $db->loadResult();
+                    $groups_result->total[$course->id] = $db->loadResult();
                 }
             }
 
-            $child_groups = self::getGroups(false, false, $parent_group->id);
+            $child_groups = self::getGroups(false, false, $groups_result->id);
             if (sizeof($child_groups)) {
                 foreach ($child_groups as $child_group) {
                     $query = $db->getQuery(true);
@@ -182,17 +182,17 @@ class plgJlmsSummaryReportsTab extends JPlugin
                         }
                     }
                 }
-                $parent_group->child_groups = $child_groups;
+                $groups_result->child_groups = $child_groups;
 
             }
 
         }
 
         if ($app->input->getCmd('download-summary-report') == "excel") {
-            self::renderExcel($users, $courses);
+            self::renderExcel($users, $courses, $groups_results);
         } else {
             $users = array_slice($users, $pageNav->limitstart, $pageNav->limit);
-            JLMS_SummaryReports_html::showSummaryReport($users, $courses, $parent_groups, $pageNav, $lists);
+            JLMS_SummaryReports_html::showSummaryReport($users, $courses, $groups_results, $pageNav, $lists);
         }
     }
 
@@ -260,7 +260,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
      * @param $users
      * @param $courses
      */
-    public function renderExcel($users, $courses)
+    public function renderExcel($users, $courses, $groups_results)
     {
         require_once("excel.php");
         Excel::init();
@@ -344,6 +344,38 @@ class plgJlmsSummaryReportsTab extends JPlugin
         $objPHPExcel->getActiveSheet()->getStyle('A1:Z1')->getFont()->setBold(true);
         $objPHPExcel->getActiveSheet()->getColumnDimension('E1')->setAutoSize(true);
 
+        $dataArray = self::generateTotalTable($groups_results, $courses, 'Parent groups statistics');
+
+        $lfai = 1; //B
+        $fai = 3;
+        $lai = $fai + 1;
+        $llai = count($courses) + 4;
+        $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai] . $fai . ':' . $first_letters[$llai] . $lai)->getFont()->setBold(true);
+        $dataArray[] = array_merge($dataArray, []);
+
+        $fai = $lai+count($groups_results)+1;
+        $lai = $fai + 3;
+        $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai] . $fai . ':' . $first_letters[$llai] . $lai)->getFont()->setBold(true);
+
+        foreach ($groups_results as $parent_group) {
+            if (isset($parent_group->child_groups)) {
+                $dataArray = array_merge($dataArray, self::generateTotalTable($parent_group->child_groups, $courses, $parent_group->ug_name));
+                $dataArray[] = array_merge($dataArray, []);
+
+                $fai = $lai+count($parent_group->child_groups)+1;
+                $lai = $fai + 3;
+                $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai] . $fai . ':' . $first_letters[$llai] . $lai)->getFont()->setBold(true);
+            }
+        }
+
+        $active_letter_index = strlen($first_letters);
+        for ($i = 0; $i < $active_letter_index; $i++) {
+            //echo $first_letters[$i];
+            $objPHPExcel->getActiveSheet()->getColumnDimension($first_letters[$i])->setAutoSize(true);
+        }
+
+        $objPHPExcel->getActiveSheet()->fromArray($dataArray, NULL, 'B3');
+
         // Set active sheet index to the first sheet, so Excel opens this as the first sheet
         $objPHPExcel->setActiveSheetIndex(0);
 
@@ -360,4 +392,45 @@ class plgJlmsSummaryReportsTab extends JPlugin
         die;
     }
 
+    static function generateTotalTable($results, $courses, $caption = '')
+    {
+        $data = [];
+        $total_staff = $total_excluded_staff = 0;
+        foreach ($courses as $course) {
+            $total_overall[$course->id] = 0;
+        }
+        $data[] = ['', '', '', $caption, '', ''];
+        $headers = ['Staff', 'Excluded Staff', '', 'Group/Course'];
+        foreach ($courses as $course) {
+            $headers[] = $course->course_name;
+        }
+        $data[] = $headers;
+        foreach ($results as $result) {
+            $show_data = [];
+            $total_staff += $result->total_users;
+            $total_excluded_staff += $result->total_blocked_users;
+            $show_data[] = $result->total_users;
+            $show_data[] = $result->total_blocked_users;
+            $diff_total_excl = $result->total_users - $result->total_blocked_users;
+            $show_data[] = '';
+            $show_data[] = $result->ug_name;
+            foreach ($courses as $course) {
+                $show_data[] = ($result->total[$course->id] ? ($result->total[$course->id] / $diff_total_excl * 100) : 0) . '%';
+                $total_overall[$course->id] += $result->total[$course->id];
+            }
+            $data[] = $show_data;
+        }
+        $overall_data = [];
+        $overall_data[] = $total_staff;
+        $overall_data[] = $total_excluded_staff;
+        $overall_data[] = '';
+        $overall_data[] = 'Overall';
+
+        $diff_total_excl = $total_staff - $total_excluded_staff;
+        foreach ($courses as $course) {
+            $overall_data[] = ($total_overall[$course->id] ? ($total_overall[$course->id] / $diff_total_excl * 100) : 0) . '%';
+        }
+        $data[] = $overall_data;
+        return $data;
+    }
 }
