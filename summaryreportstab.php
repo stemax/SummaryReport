@@ -13,9 +13,8 @@ class plgJlmsSummaryReportsTab extends JPlugin
         $plugin = JPluginHelper::getPlugin('jlms', 'summaryreportstab');
         $params = json_decode($plugin->params);
         $param_courses_ids = $params->courses_ids;
-        if ($param_courses_ids)
-        {
-            self::$allowed_courses_ids = explode(',',$param_courses_ids);
+        if ($param_courses_ids) {
+            self::$allowed_courses_ids = explode(',', $param_courses_ids);
         }
 
         parent::__construct($subject, $config);
@@ -30,11 +29,9 @@ class plgJlmsSummaryReportsTab extends JPlugin
         if ($JLMS_ACL->isAdmin()) {
             $titleTab = $this->params->get('title_tab', 'Summary Report');
             echo JHtml::_('bootstrap.addTab', 'JLMS', 'jlmsTabSummaryReport', JText::_($titleTab, true));
-            if (sizeof(self::$allowed_courses_ids))
-            {
+            if (sizeof(self::$allowed_courses_ids)) {
                 self::JLMS_SummaryReportScorm();
-            }else
-            {
+            } else {
                 echo '<strong>For generating summary report, you need to add courses ids in plugin params, please.</strong>';
             }
             echo JHtml::_('bootstrap.endTab');
@@ -71,9 +68,8 @@ class plgJlmsSummaryReportsTab extends JPlugin
             //TODO filters by course and group
             ->group('u.id')
             ->order('u.username');
-        if ($ug_name_id)
-        {
-            $query->where('gg.group_id='.$ug_name_id.' OR gg.subgroup1_id='.$ug_name_id);
+        if ($ug_name_id) {
+            $query->where('gg.group_id=' . $ug_name_id);
         }
         $db->setQuery($query);
         $users = $db->LoadObjectList();
@@ -85,11 +81,9 @@ class plgJlmsSummaryReportsTab extends JPlugin
                     ->from('#__lms_certificate_users AS cer')
                     ->where('cer.user_id=' . $user->id)
                     ->andWhere('cer.crt_option=1')
-                    ->andWhere('course_id IN ('.implode(',', self::$allowed_courses_ids).')')
-                ;
-                if ($course_name_id)
-                {
-                    $query->andWhere('course_id='.$course_name_id);
+                    ->andWhere('course_id IN (' . implode(',', self::$allowed_courses_ids) . ')');
+                if ($course_name_id) {
+                    $query->andWhere('course_id=' . $course_name_id);
                 }
                 $db->setQuery($query);
                 $user->completed_courses = $db->loadColumn();
@@ -233,6 +227,9 @@ class plgJlmsSummaryReportsTab extends JPlugin
     {
         global $JLMS_DB;
 
+        $app = JFactory::getApplication();
+        $ug_name_id = $app->getUserStateFromRequest("plgJlmsSummaryReportsTab.ug_name", 'ug_name', '', 'cmd');
+
         $query = $JLMS_DB->getQuery(true);
         $query->select('ug_name,id')->from('#__lms_usergroups');
         if ($only_parents) {
@@ -240,6 +237,9 @@ class plgJlmsSummaryReportsTab extends JPlugin
         }
         if ($parent_id) {
             $query->where('parent_id=' . $parent_id);
+        }
+        if ($ug_name_id && !$with_default_item && !$parent_id) {
+            $query->andWhere('id=' . $ug_name_id);
         }
         $JLMS_DB->setQuery($query);
         $groups = (array)$JLMS_DB->loadObjectList();
@@ -268,16 +268,14 @@ class plgJlmsSummaryReportsTab extends JPlugin
         $course_name_id = $app->getUserStateFromRequest("plgJlmsSummaryReportsTab.course_name", 'course_name', '', 'cmd');
 
         $query = $JLMS_DB->getQuery(true);
-        $query->select('course_name,id')->from('#__lms_courses')->where('id IN ('.implode(',', self::$allowed_courses_ids).')');
-        if ($course_name_id && !$with_default_item)
-        {
-            $query->andWhere('id='.$course_name_id);
+        $query->select('course_name,id')->from('#__lms_courses')->where('id IN (' . implode(',', self::$allowed_courses_ids) . ')');
+        if ($course_name_id && !$with_default_item) {
+            $query->andWhere('id=' . $course_name_id);
         }
         $JLMS_DB->setQuery($query);
         $courses = (array)$JLMS_DB->loadObjectList();
 
-        if (sizeof($courses))
-        {
+        if (sizeof($courses)) {
             $acids = self::$allowed_courses_ids;
             usort($courses, function ($a, $b) use ($acids) {
                 $pos_a = array_search($a->id, $acids);
@@ -394,7 +392,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
         $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai] . $fai . ':' . $first_letters[$llai] . $lai)->getFont()->setBold(true);
         $dataArray[] = array_merge($dataArray, []);
 
-        $fai = $lai+count($groups_results)+1;
+        $fai = $lai + count($groups_results) + 1;
         $lai = $fai + 3;
         $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai] . $fai . ':' . $first_letters[$llai] . $lai)->getFont()->setBold(true);
 
@@ -403,7 +401,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
                 $dataArray = array_merge($dataArray, self::generateTotalTable($parent_group->child_groups, $courses, $parent_group->ug_name));
                 $dataArray[] = array_merge($dataArray, []);
 
-                $fai = $lai+count($parent_group->child_groups)+1;
+                $fai = $lai + count($parent_group->child_groups) + 1;
                 $lai = $fai + 3;
                 $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai] . $fai . ':' . $first_letters[$llai] . $lai)->getFont()->setBold(true);
             }

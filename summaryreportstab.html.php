@@ -107,7 +107,7 @@ class JLMS_SummaryReports_html
         self::showTotalTable($parent_groups, $courses, 'Parent groups statistics');
         foreach ($parent_groups as $parent_group) {
             if (isset($parent_group->child_groups)) {
-                 self::showTotalTable($parent_group->child_groups, $courses, $parent_group->ug_name);
+                self::showTotalTable($parent_group->child_groups, $courses, $parent_group->ug_name);
             }
         }
 
