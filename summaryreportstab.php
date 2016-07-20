@@ -340,6 +340,13 @@ class plgJlmsSummaryReportsTab extends JPlugin
             //->setCellValue($first_letters[$active_letter_index++] . '1', 'Include in Totals calcs')
         ;
         $objPHPExcel->getActiveSheet()->getStyle('A1:' . $first_letters[$active_letter_index] . '1')->getFont()->setBold(true);
+        $styleFirsetline = array(
+            'fill' 	=> array(
+                'type'		=> PHPExcel_Style_Fill::FILL_SOLID,
+                'color'		=> array('argb' => 'FFFF00')
+            )
+        );
+        $objPHPExcel->getActiveSheet()->getStyle('A1:' . $first_letters[$active_letter_index] . '1')->applyFromArray($styleFirsetline);
 
         for ($i = 0; $i < $active_letter_index; $i++) {
             echo $first_letters[$i];
@@ -379,9 +386,55 @@ class plgJlmsSummaryReportsTab extends JPlugin
         $totalSheet = new PHPExcel_Worksheet($objPHPExcel, 'Totals');
         $objPHPExcel->addSheet($totalSheet, 1);
         $objPHPExcel->setActiveSheetIndex(1);
+
+        $last_allowed_letter_index = count($courses) + 5;
+        $last_allowed_letter = $first_letters[$last_allowed_letter_index];
+
+        $styleThickBrownBorderOutline = array(
+            'borders' => array(
+                'outline' => array(
+                    'style' => PHPExcel_Style_Border::BORDER_THICK,
+                    'color' => array('argb' => 'FF993300'),
+                ),
+                'allborders' => array(
+                    'style' => PHPExcel_Style_Border::BORDER_THIN
+                )
+            ),
+        );
+
+        $styleCoursesHeader = array(
+            'fill' 	=> array(
+                'type'		=> PHPExcel_Style_Fill::FILL_SOLID,
+                'color'		=> array('argb' => 'FFFF00')
+            )
+        );
+
+        $objPHPExcel->getActiveSheet()->getStyle('A1:'.$last_allowed_letter.'1')->applyFromArray(
+            array('fill' 	=> array(
+                'type'		=> PHPExcel_Style_Fill::FILL_SOLID,
+                'color'		=> array('argb' => '9370BD')
+            )
+            )
+        );
+
+        $objPHPExcel->getActiveSheet()->getStyle('A2:'.$last_allowed_letter.(count($groups_results)*10))->applyFromArray(
+            array('fill' 	=> array(
+                'type'		=> PHPExcel_Style_Fill::FILL_SOLID,
+                'color'		=> array('argb' => 'FFFFFF')
+            ),
+                'borders' => []
+            )
+        );
+
+        $objPHPExcel->getActiveSheet()->getStyle('A2:'.$last_allowed_letter.'500')->getAlignment()->setWrapText(true);
+
         $objPHPExcel->getActiveSheet()->setCellValue('E1', 'Status of Online Training');
-        $objPHPExcel->getActiveSheet()->getStyle('A1:Z1')->getFont()->setBold(true);
+        $objPHPExcel->getActiveSheet()->getStyle('E1')->getFont()->setName('Calibri');
+        $objPHPExcel->getActiveSheet()->getStyle('E1')->getFont()->setSize(14);
+        $objPHPExcel->getActiveSheet()->getStyle('E1')->getFont()->setBold(true);
+
         $objPHPExcel->getActiveSheet()->getColumnDimension('E1')->setAutoSize(true);
+
 
         $dataArray = self::generateTotalTable($groups_results, $courses, 'Parent groups statistics');
 
@@ -390,6 +443,21 @@ class plgJlmsSummaryReportsTab extends JPlugin
         $lai = $fai + 1;
         $llai = count($courses) + 4;
         $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai] . $fai . ':' . $first_letters[$llai] . $lai)->getFont()->setBold(true);
+
+        //courses header color
+        $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai+4] . ($fai+1) . ':' . $first_letters[$llai] .($fai+1))->applyFromArray($styleCoursesHeader);
+
+        //courses stat border
+        $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai+3] . ($fai+1) . ':' . $first_letters[$llai] .( $lai + count($groups_results) + 1))->applyFromArray($styleThickBrownBorderOutline);
+
+        //staff border
+        $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai] . ($fai+2) . ':' . $first_letters[$lfai+1] .( $lai + count($groups_results)))->applyFromArray($styleThickBrownBorderOutline);
+
+        //staff center
+        $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai] . ($fai+1) . ':' . $first_letters[$lfai+1] .( $lai + count($groups_results)+1))->getAlignment()
+            ->setVertical(\PHPExcel_Style_Alignment::VERTICAL_CENTER)
+            ->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+
         $dataArray[] = array_merge($dataArray, []);
 
         $fai = $lai + count($groups_results) + 1;
@@ -401,14 +469,24 @@ class plgJlmsSummaryReportsTab extends JPlugin
                 $dataArray = array_merge($dataArray, self::generateTotalTable($parent_group->child_groups, $courses, $parent_group->ug_name));
                 $dataArray[] = array_merge($dataArray, []);
 
+                //courses header color
+                $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai+4] . ($fai+3) . ':' . $first_letters[$llai] .( $fai+3))->applyFromArray($styleCoursesHeader);
+                //courses stat border
+                $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai+3] . ($fai+3) . ':' . $first_letters[$llai] .( $lai + count($parent_group->child_groups) + 1))->applyFromArray($styleThickBrownBorderOutline);
+                //staff border
+                $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai] . ($fai+4) . ':' . $first_letters[$lfai+1] .( $lai + count($parent_group->child_groups)))->applyFromArray($styleThickBrownBorderOutline);
+                //staff center
+                $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai] . ($fai+3) . ':' . $first_letters[$lfai+1] .( $lai + count($parent_group->child_groups)+1))->getAlignment()
+                    ->setVertical(\PHPExcel_Style_Alignment::VERTICAL_CENTER)
+                    ->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+
                 $fai = $lai + count($parent_group->child_groups) + 1;
                 $lai = $fai + 3;
                 $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai] . $fai . ':' . $first_letters[$llai] . $lai)->getFont()->setBold(true);
             }
         }
 
-        $active_letter_index = strlen($first_letters);
-        for ($i = 0; $i < $active_letter_index; $i++) {
+        for ($i = 0; $i < $last_allowed_letter_index; $i++) {
             //echo $first_letters[$i];
             $objPHPExcel->getActiveSheet()->getColumnDimension($first_letters[$i])->setAutoSize(true);
         }
@@ -439,7 +517,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
             $total_overall[$course->id] = 0;
         }
         $data[] = ['', '', '', $caption, '', ''];
-        $headers = ['Staff', 'Excluded Staff', '', 'Group/Course'];
+        $headers = ['Total Staff', 'Excluded Staff', ' ', ' '];
         foreach ($courses as $course) {
             $headers[] = $course->course_name;
         }
@@ -448,8 +526,8 @@ class plgJlmsSummaryReportsTab extends JPlugin
             $show_data = [];
             $total_staff += $result->total_users;
             $total_excluded_staff += $result->total_blocked_users;
-            $show_data[] = $result->total_users;
-            $show_data[] = $result->total_blocked_users;
+            $show_data[] = (string)$result->total_users;
+            $show_data[] = (string)$result->total_blocked_users;
             $diff_total_excl = $result->total_users - $result->total_blocked_users;
             $show_data[] = '';
             $show_data[] = $result->ug_name;
@@ -460,8 +538,8 @@ class plgJlmsSummaryReportsTab extends JPlugin
             $data[] = $show_data;
         }
         $overall_data = [];
-        $overall_data[] = $total_staff;
-        $overall_data[] = $total_excluded_staff;
+        $overall_data[] = (string)$total_staff;
+        $overall_data[] = (string)$total_excluded_staff;
         $overall_data[] = '';
         $overall_data[] = 'Overall';
 

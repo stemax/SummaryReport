@@ -10,6 +10,11 @@ class JLMS_SummaryReports_html
         global $Itemid;
         $link = "index.php?option=com_joomla_lms&task=default&Itemid=$Itemid&activetab=jlmsTabSummaryReport";
         ?>
+        <style>
+            .thfhg{
+                color: #ffff00;
+            }
+        </style>
         <script type="text/javascript">
             jQuery(function () {
                 jQuery('#summary-report-download').on('click', set);
@@ -31,8 +36,8 @@ class JLMS_SummaryReports_html
             <?php
             $filtertop = new \LMS\Widgets\Filters();
             $filtertop->addFilter($pageNav->GetLimitBox($link));
-            $filtertop->addFilter('<button class="btn tip hasTooltip" id="summary-report-search" type="submit" title="' . JText::_('JSEARCH_FILTER_SUBMIT') . '"><i class="icon-search"></i></button>');
             $filtertop->addFilter('<button class="btn tip hasTooltip" id="summary-report-download" type="submit" title="Download summary report"><i class="icon-download"></i></button>');
+            $filtertop->addFilter('<button class="btn tip hasTooltip" id="summary-report-search" type="submit" title="' . JText::_('JSEARCH_FILTER_SUBMIT') . '"><i class="icon-search"></i></button>');
             $filtertop->addFilter($lists['group']);
             $filtertop->addFilter($lists['course']);
             echo $filtertop;
