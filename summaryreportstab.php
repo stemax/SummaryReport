@@ -56,7 +56,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
         $ug_name_id = $app->getUserStateFromRequest("plgJlmsSummaryReportsTab.ug_name", 'ug_name', '', 'cmd');
         $course_name_id = $app->getUserStateFromRequest("plgJlmsSummaryReportsTab.course_name", 'course_name', '', 'cmd');
 
-        $lists['group'] = mosHTML::selectList(self::getGroups(true), 'ug_name', 'class="inputbox" size="1" ', 'id', 'ug_name', $ug_name_id);;
+        $lists['group'] = mosHTML::selectList(self::getGroups(true, true), 'ug_name', 'class="inputbox" size="1" ', 'id', 'ug_name', $ug_name_id);;
         $lists['course'] = mosHTML::selectList(self::getCourses(true), 'course_name', 'class="inputbox" size="1" ', 'id', 'course_name', $course_name_id);;
 
         $query = $db->getQuery(true);
@@ -276,6 +276,16 @@ class plgJlmsSummaryReportsTab extends JPlugin
         $JLMS_DB->setQuery($query);
         $courses = (array)$JLMS_DB->loadObjectList();
 
+        if (sizeof($courses))
+        {
+            $acids = self::$allowed_courses_ids;
+            usort($courses, function ($a, $b) use ($acids) {
+                $pos_a = array_search($a->id, $acids);
+                $pos_b = array_search($b->id, $acids);
+                return $pos_a - $pos_b;
+            });
+
+        }
         if ($with_default_item) {
             $course_default = new stdClass();
             $course_default->course_name = 'Select course';
