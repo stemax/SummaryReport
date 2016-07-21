@@ -14,6 +14,7 @@ class JLMS_SummaryReports_html
             jQuery(function () {
                 jQuery('#summary-report-download').on('click', set);
                 jQuery('#summary-report-search').on('click', unset);
+                jQuery('#limit_chzn').on('click', unset);
                 function set() {
                     jQuery('#download-summary-report').attr('value', 'excel');
                 };
