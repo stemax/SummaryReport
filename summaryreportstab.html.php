@@ -10,11 +10,6 @@ class JLMS_SummaryReports_html
         global $Itemid;
         $link = "index.php?option=com_joomla_lms&task=default&Itemid=$Itemid&activetab=jlmsTabSummaryReport";
         ?>
-        <style>
-            .thfhg{
-                color: #ffff00;
-            }
-        </style>
         <script type="text/javascript">
             jQuery(function () {
                 jQuery('#summary-report-download').on('click', set);

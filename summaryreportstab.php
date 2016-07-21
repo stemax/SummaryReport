@@ -340,12 +340,12 @@ class plgJlmsSummaryReportsTab extends JPlugin
             //->setCellValue($first_letters[$active_letter_index++] . '1', 'Include in Totals calcs')
         ;
         $objPHPExcel->getActiveSheet()->getStyle('A1:' . $first_letters[$active_letter_index] . '1')->getFont()->setBold(true);
-        $styleFirsetline = array(
-            'fill' 	=> array(
-                'type'		=> PHPExcel_Style_Fill::FILL_SOLID,
-                'color'		=> array('argb' => 'FFFF00')
-            )
-        );
+        $styleFirsetline = [
+            'fill' => [
+                'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                'color' => ['argb' => 'FFFF00']
+            ]
+        ];
         $objPHPExcel->getActiveSheet()->getStyle('A1:' . $first_letters[$active_letter_index] . '1')->applyFromArray($styleFirsetline);
 
         for ($i = 0; $i < $active_letter_index; $i++) {
@@ -391,43 +391,43 @@ class plgJlmsSummaryReportsTab extends JPlugin
         $last_allowed_letter = $first_letters[$last_allowed_letter_index];
 
         //start styles
-        $styleThickBrownBorderOutline = array(
-            'borders' => array(
-                'outline' => array(
+        $styleThickBrownBorderOutline = [
+            'borders' => [
+                'outline' => [
                     'style' => PHPExcel_Style_Border::BORDER_THICK,
-                    'color' => array('argb' => '000000'),
-                ),
-                'allborders' => array(
+                    'color' => ['argb' => '000000'],
+                ],
+                'allborders' => [
                     'style' => PHPExcel_Style_Border::BORDER_THIN
-                )
-            ),
+                ]
+            ],
+        ];
+
+        $styleCoursesHeader = [
+            'fill' => [
+                'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                'color' => ['argb' => 'FFFF00']
+            ]
+        ];
+
+        $objPHPExcel->getActiveSheet()->getStyle('A1:' . $last_allowed_letter . '1')->applyFromArray(
+            ['fill' => [
+                'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                'color' => ['argb' => '9370BD']
+            ]
+            ]
         );
 
-        $styleCoursesHeader = array(
-            'fill' 	=> array(
-                'type'		=> PHPExcel_Style_Fill::FILL_SOLID,
-                'color'		=> array('argb' => 'FFFF00')
-            )
-        );
-
-        $objPHPExcel->getActiveSheet()->getStyle('A1:'.$last_allowed_letter.'1')->applyFromArray(
-            array('fill' 	=> array(
-                'type'		=> PHPExcel_Style_Fill::FILL_SOLID,
-                'color'		=> array('argb' => '9370BD')
-            )
-            )
-        );
-
-        $objPHPExcel->getActiveSheet()->getStyle('A2:'.$last_allowed_letter.(count($groups_results)*10))->applyFromArray(
-            array('fill' 	=> array(
-                'type'		=> PHPExcel_Style_Fill::FILL_SOLID,
-                'color'		=> array('argb' => 'FFFFFF')
-            ),
+        $objPHPExcel->getActiveSheet()->getStyle('A2:' . $last_allowed_letter . (count($groups_results) * 10))->applyFromArray(
+            ['fill' => [
+                'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                'color' => ['argb' => 'FFFFFF']
+            ],
                 'borders' => []
-            )
+            ]
         );
 
-        $objPHPExcel->getActiveSheet()->getStyle('A2:'.$last_allowed_letter.'500')->getAlignment()->setWrapText(true);
+        $objPHPExcel->getActiveSheet()->getStyle('A2:' . $last_allowed_letter . '500')->getAlignment()->setWrapText(true);
 
         //conditionals
         $objConditional_minus_staff = new PHPExcel_Style_Conditional();
@@ -464,29 +464,29 @@ class plgJlmsSummaryReportsTab extends JPlugin
         $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai] . $fai . ':' . $first_letters[$llai] . $lai)->getFont()->setBold(true);
 
         //courses result position
-        $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai+4] . ($fai+2) . ':' . $first_letters[$llai] .($lai + count($groups_results)+1))->getAlignment()->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+        $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai + 4] . ($fai + 2) . ':' . $first_letters[$llai] . ($lai + count($groups_results) + 1))->getAlignment()->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
 
         //course completed condition
-        $conditionalStyles = $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai+4] . ($fai+2) . ':' . $first_letters[$llai] .($lai + count($groups_results)+1))->getConditionalStyles();
+        $conditionalStyles = $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai + 4] . ($fai + 2) . ':' . $first_letters[$llai] . ($lai + count($groups_results) + 1))->getConditionalStyles();
         array_push($conditionalStyles, $objConditional_course_completed);
-        $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai+4] . ($fai+2) . ':' . $first_letters[$llai] .($lai + count($groups_results)+1))->setConditionalStyles($conditionalStyles);
+        $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai + 4] . ($fai + 2) . ':' . $first_letters[$llai] . ($lai + count($groups_results) + 1))->setConditionalStyles($conditionalStyles);
 
         //courses header color
-        $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai+4] . ($fai+1) . ':' . $first_letters[$llai] .($fai+1))->applyFromArray($styleCoursesHeader);
+        $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai + 4] . ($fai + 1) . ':' . $first_letters[$llai] . ($fai + 1))->applyFromArray($styleCoursesHeader);
 
         //courses stat border
-        $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai+3] . ($fai+1) . ':' . $first_letters[$llai] .( $lai + count($groups_results) + 1))->applyFromArray($styleThickBrownBorderOutline);
+        $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai + 3] . ($fai + 1) . ':' . $first_letters[$llai] . ($lai + count($groups_results) + 1))->applyFromArray($styleThickBrownBorderOutline);
 
         //staff border
-        $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai] . ($fai+2) . ':' . $first_letters[$lfai+1] .( $lai + count($groups_results)))->applyFromArray($styleThickBrownBorderOutline);
+        $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai] . ($fai + 2) . ':' . $first_letters[$lfai + 1] . ($lai + count($groups_results)))->applyFromArray($styleThickBrownBorderOutline);
 
         //staff conditional
-        $conditionalStyles = $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai+1] . ($fai+2) . ':' . $first_letters[$lfai+1] .( $lai + count($groups_results)))->getConditionalStyles();
+        $conditionalStyles = $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai + 1] . ($fai + 2) . ':' . $first_letters[$lfai + 1] . ($lai + count($groups_results)))->getConditionalStyles();
         array_push($conditionalStyles, $objConditional_minus_staff);
-        $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai+1] . ($fai+2) . ':' . $first_letters[$lfai+1] .( $lai + count($groups_results)))->setConditionalStyles($conditionalStyles);
+        $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai + 1] . ($fai + 2) . ':' . $first_letters[$lfai + 1] . ($lai + count($groups_results)))->setConditionalStyles($conditionalStyles);
 
         //staff center
-        $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai] . ($fai+1) . ':' . $first_letters[$lfai+1] .( $lai + count($groups_results)+1))->getAlignment()
+        $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai] . ($fai + 1) . ':' . $first_letters[$lfai + 1] . ($lai + count($groups_results) + 1))->getAlignment()
             ->setVertical(\PHPExcel_Style_Alignment::VERTICAL_CENTER)
             ->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
 
@@ -502,27 +502,27 @@ class plgJlmsSummaryReportsTab extends JPlugin
                 $dataArray[] = array_merge($dataArray, []);
 
                 //courses result position
-                $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai+4] . ($fai+4) . ':' . $first_letters[$llai] .($lai + count($parent_group->child_groups) + 1))->getAlignment()->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+                $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai + 4] . ($fai + 4) . ':' . $first_letters[$llai] . ($lai + count($parent_group->child_groups) + 1))->getAlignment()->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
 
                 //course completed condition
-                $conditionalStyles = $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai+4] . ($fai+4) . ':' . $first_letters[$llai] .($lai + count($parent_group->child_groups) + 1))->getConditionalStyles();
+                $conditionalStyles = $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai + 4] . ($fai + 4) . ':' . $first_letters[$llai] . ($lai + count($parent_group->child_groups) + 1))->getConditionalStyles();
                 array_push($conditionalStyles, $objConditional_course_completed);
-                $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai+4] . ($fai+4) . ':' . $first_letters[$llai] .($lai + count($parent_group->child_groups) + 1))->setConditionalStyles($conditionalStyles);
+                $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai + 4] . ($fai + 4) . ':' . $first_letters[$llai] . ($lai + count($parent_group->child_groups) + 1))->setConditionalStyles($conditionalStyles);
 
                 //courses header color
-                $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai+4] . ($fai+3) . ':' . $first_letters[$llai] .( $fai+3))->applyFromArray($styleCoursesHeader);
+                $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai + 4] . ($fai + 3) . ':' . $first_letters[$llai] . ($fai + 3))->applyFromArray($styleCoursesHeader);
                 //courses stat border
-                $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai+3] . ($fai+3) . ':' . $first_letters[$llai] .( $lai + count($parent_group->child_groups) + 1))->applyFromArray($styleThickBrownBorderOutline);
+                $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai + 3] . ($fai + 3) . ':' . $first_letters[$llai] . ($lai + count($parent_group->child_groups) + 1))->applyFromArray($styleThickBrownBorderOutline);
                 //staff border
-                $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai] . ($fai+4) . ':' . $first_letters[$lfai+1] .( $lai + count($parent_group->child_groups)))->applyFromArray($styleThickBrownBorderOutline);
+                $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai] . ($fai + 4) . ':' . $first_letters[$lfai + 1] . ($lai + count($parent_group->child_groups)))->applyFromArray($styleThickBrownBorderOutline);
 
                 //staff conditional
-                $conditionalStyles = $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai+1] . ($fai+4) . ':' . $first_letters[$lfai+1] .( $lai + count($parent_group->child_groups)))->getConditionalStyles();
+                $conditionalStyles = $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai + 1] . ($fai + 4) . ':' . $first_letters[$lfai + 1] . ($lai + count($parent_group->child_groups)))->getConditionalStyles();
                 array_push($conditionalStyles, $objConditional_minus_staff);
-                $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai+1] . ($fai+4) . ':' . $first_letters[$lfai+1] .( $lai + count($parent_group->child_groups)))->setConditionalStyles($conditionalStyles);
+                $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai + 1] . ($fai + 4) . ':' . $first_letters[$lfai + 1] . ($lai + count($parent_group->child_groups)))->setConditionalStyles($conditionalStyles);
 
                 //staff center
-                $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai] . ($fai+3) . ':' . $first_letters[$lfai+1] .( $lai + count($parent_group->child_groups)+1))->getAlignment()
+                $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai] . ($fai + 3) . ':' . $first_letters[$lfai + 1] . ($lai + count($parent_group->child_groups) + 1))->getAlignment()
                     ->setVertical(\PHPExcel_Style_Alignment::VERTICAL_CENTER)
                     ->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
 
