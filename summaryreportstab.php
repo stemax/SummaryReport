@@ -403,6 +403,19 @@ class plgJlmsSummaryReportsTab extends JPlugin
             ],
         ];
 
+        $styleCourseResultsBorder = [
+            'borders' => [
+                'allborders' => [
+                    'style' => PHPExcel_Style_Border::BORDER_DASHED,
+                    'color' => ['argb' => '000000'],
+                ],
+                'right' => [
+                    'style' => PHPExcel_Style_Border::BORDER_THICK,
+                    'color' => ['argb' => '000000'],
+                ],
+            ],
+        ];
+
         $styleCoursesHeader = [
             'fill' => [
                 'type' => PHPExcel_Style_Fill::FILL_SOLID,
@@ -477,6 +490,9 @@ class plgJlmsSummaryReportsTab extends JPlugin
         //courses stat border
         $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai + 3] . ($fai + 1) . ':' . $first_letters[$llai] . ($lai + count($groups_results) + 1))->applyFromArray($styleThickBrownBorderOutline);
 
+        //courses bottom dashed
+        $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai + 4] . ($fai + 2) . ':' . $first_letters[$llai] . ($lai + count($groups_results)))->applyFromArray($styleCourseResultsBorder);
+
         //staff border
         $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai] . ($fai + 2) . ':' . $first_letters[$lfai + 1] . ($lai + count($groups_results)))->applyFromArray($styleThickBrownBorderOutline);
 
@@ -513,6 +529,9 @@ class plgJlmsSummaryReportsTab extends JPlugin
                 $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai + 4] . ($fai + 3) . ':' . $first_letters[$llai] . ($fai + 3))->applyFromArray($styleCoursesHeader);
                 //courses stat border
                 $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai + 3] . ($fai + 3) . ':' . $first_letters[$llai] . ($lai + count($parent_group->child_groups) + 1))->applyFromArray($styleThickBrownBorderOutline);
+                //courses bottom dashed
+                $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai + 4] . ($fai + 4) . ':' . $first_letters[$llai] . ($lai + count($parent_group->child_groups)))->applyFromArray($styleCourseResultsBorder);
+
                 //staff border
                 $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai] . ($fai + 4) . ':' . $first_letters[$lfai + 1] . ($lai + count($parent_group->child_groups)))->applyFromArray($styleThickBrownBorderOutline);
 
