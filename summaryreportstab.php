@@ -80,10 +80,10 @@ class plgJlmsSummaryReportsTab extends JPlugin
                 $query->select('course_id')
                     ->from('#__lms_certificate_users AS cer')
                     ->where('cer.user_id=' . $user->id)
-                    ->andWhere('cer.crt_option=1')
-                    ->andWhere('course_id IN (' . implode(',', self::$allowed_courses_ids) . ')');
+                    ->where('cer.crt_option=1')
+                    ->where('course_id IN (' . implode(',', self::$allowed_courses_ids) . ')');
                 if ($course_name_id) {
-                    $query->andWhere('course_id=' . $course_name_id);
+                    $query->where('course_id=' . $course_name_id);
                 }
                 $db->setQuery($query);
                 $user->completed_courses = $db->loadColumn();
@@ -131,7 +131,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
                 $query->select('COUNT(id)')
                     ->from('#__lms_certificate_users AS cer')
                     ->where('cer.user_id IN (' . implode(',', $active_users) . ')')
-                    ->andWhere('cer.crt_option=1')//TODO filters by course
+                    ->where('cer.crt_option=1')//TODO filters by course
                 ;
                 $db->setQuery($query);
                 $groups_result->total_completed = $db->loadResult();
@@ -141,8 +141,8 @@ class plgJlmsSummaryReportsTab extends JPlugin
                     $query->select('COUNT(id)')
                         ->from('#__lms_certificate_users AS cer')
                         ->where('cer.user_id IN (' . implode(',', $active_users) . ')')
-                        ->andWhere('cer.course_id=' . $course->id)
-                        ->andWhere('cer.crt_option=1')//TODO filters by course
+                        ->where('cer.course_id=' . $course->id)
+                        ->where('cer.crt_option=1')//TODO filters by course
                     ;
                     $db->setQuery($query);
                     $groups_result->total[$course->id] = $db->loadResult();
@@ -182,7 +182,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
                         $query->select('COUNT(id)')
                             ->from('#__lms_certificate_users AS cer')
                             ->where('cer.user_id IN (' . implode(',', $active_users) . ')')
-                            ->andWhere('cer.crt_option=1')//TODO filters by course
+                            ->where('cer.crt_option=1')//TODO filters by course
                         ;
                         $db->setQuery($query);
                         $child_group->total_completed = $db->loadResult();
@@ -192,8 +192,8 @@ class plgJlmsSummaryReportsTab extends JPlugin
                             $query->select('COUNT(id)')
                                 ->from('#__lms_certificate_users AS cer')
                                 ->where('cer.user_id IN (' . implode(',', $active_users) . ')')
-                                ->andWhere('cer.course_id=' . $course->id)
-                                ->andWhere('cer.crt_option=1')//TODO filters by course
+                                ->where('cer.course_id=' . $course->id)
+                                ->where('cer.crt_option=1')//TODO filters by course
                             ;
                             $db->setQuery($query);
                             $child_group->total[$course->id] = $db->loadResult();
@@ -239,7 +239,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
             $query->where('parent_id=' . $parent_id);
         }
         if ($ug_name_id && !$with_default_item && !$parent_id) {
-            $query->andWhere('id=' . $ug_name_id);
+            $query->where('id=' . $ug_name_id);
         }
         $JLMS_DB->setQuery($query);
         $groups = (array)$JLMS_DB->loadObjectList();
@@ -270,7 +270,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
         $query = $JLMS_DB->getQuery(true);
         $query->select('course_name,id')->from('#__lms_courses')->where('id IN (' . implode(',', self::$allowed_courses_ids) . ')');
         if ($course_name_id && !$with_default_item) {
-            $query->andWhere('id=' . $course_name_id);
+            $query->where('id=' . $course_name_id);
         }
         $JLMS_DB->setQuery($query);
         $courses = (array)$JLMS_DB->loadObjectList();
