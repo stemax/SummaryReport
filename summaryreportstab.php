@@ -469,7 +469,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
         $objPHPExcel->getActiveSheet()->getColumnDimension('E1')->setAutoSize(true);
 
 
-        $dataArray = self::generateTotalTable($groups_results, $courses, 'Parent groups statistics');
+        $dataArray = self::generateTotalTable($groups_results, $courses, 'Overall site statistics');
 
         $lfai = 1; //B
         $fai = 3;

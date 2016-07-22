@@ -105,7 +105,7 @@ class JLMS_SummaryReports_html
             <input type="hidden" id="download-summary-report" name="download-summary-report" value=""/>
         </form>
         <?php
-        self::showTotalTable($parent_groups, $courses, 'Parent groups statistics');
+        self::showTotalTable($parent_groups, $courses, 'Overall site statistics');
         foreach ($parent_groups as $parent_group) {
             if (isset($parent_group->child_groups)) {
                 self::showTotalTable($parent_group->child_groups, $courses, $parent_group->ug_name);
