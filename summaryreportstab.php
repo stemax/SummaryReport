@@ -452,9 +452,10 @@ class plgJlmsSummaryReportsTab extends JPlugin
         $objConditional_minus_staff->getStyle()->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getEndColor()->setARGB('FFC7CE');
 
         $objConditional_course_completed = new PHPExcel_Style_Conditional();
-        $objConditional_course_completed->setConditionType(PHPExcel_Style_Conditional::CONDITION_CONTAINSTEXT)
-            ->setOperatorType(PHPExcel_Style_Conditional::OPERATOR_CONTAINSTEXT)
-            ->setText('100%');
+        $objConditional_course_completed->setConditionType(PHPExcel_Style_Conditional::CONDITION_CELLIS)
+            ->setOperatorType(PHPExcel_Style_Conditional::OPERATOR_EQUAL)
+            ->setCondition('1');
+        $objConditional_course_completed->getStyle()->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_PERCENTAGE);
         $objConditional_course_completed->getStyle()->getFont()->getColor()->setARGB(PHPExcel_Style_Color::COLOR_DARKGREEN);
         //$objConditional_course_completed->getStyle()->getFont()->setBold(true);
         $objConditional_course_completed->getStyle()->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getEndColor()->setARGB('C6EFCE');
@@ -483,6 +484,14 @@ class plgJlmsSummaryReportsTab extends JPlugin
         $conditionalStyles = $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai + 4] . ($fai + 2) . ':' . $first_letters[$llai] . ($lai + count($groups_results) + 1))->getConditionalStyles();
         array_push($conditionalStyles, $objConditional_course_completed);
         $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai + 4] . ($fai + 2) . ':' . $first_letters[$llai] . ($lai + count($groups_results) + 1))->setConditionalStyles($conditionalStyles);
+
+        //percent_format
+        $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai + 4] . ($fai + 2) . ':' . $first_letters[$llai] . ($lai + count($groups_results) + 1))
+            ->getNumberFormat()->applyFromArray(
+                array(
+                    'code' => PHPExcel_Style_NumberFormat::FORMAT_PERCENTAGE
+                )
+            );
 
         //courses header color
         $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai + 4] . ($fai + 1) . ':' . $first_letters[$llai] . ($fai + 1))->applyFromArray($styleCoursesHeader);
@@ -519,6 +528,14 @@ class plgJlmsSummaryReportsTab extends JPlugin
 
                 //courses result position
                 $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai + 4] . ($fai + 4) . ':' . $first_letters[$llai] . ($lai + count($parent_group->child_groups) + 1))->getAlignment()->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+
+                //percent_format
+                $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai + 4] . ($fai + 4) . ':' . $first_letters[$llai] . ($lai + count($parent_group->child_groups) + 1))
+                    ->getNumberFormat()->applyFromArray(
+                        array(
+                            'code' => PHPExcel_Style_NumberFormat::FORMAT_PERCENTAGE
+                        )
+                    );
 
                 //course completed condition
                 $conditionalStyles = $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai + 4] . ($fai + 4) . ':' . $first_letters[$llai] . ($lai + count($parent_group->child_groups) + 1))->getConditionalStyles();
@@ -597,7 +614,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
             $show_data[] = '';
             $show_data[] = $result->ug_name;
             foreach ($courses as $course) {
-                $show_data[] = ($result->total[$course->id] ? ($result->total[$course->id] / $diff_total_excl * 100) : 0) . '%';
+                $show_data[] = ($result->total[$course->id] ? ($result->total[$course->id] / $diff_total_excl ) : '0') ;
                 $total_overall[$course->id] += $result->total[$course->id];
             }
             $data[] = $show_data;
@@ -610,7 +627,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
 
         $diff_total_excl = $total_staff - $total_excluded_staff;
         foreach ($courses as $course) {
-            $overall_data[] = ($total_overall[$course->id] ? ($total_overall[$course->id] / $diff_total_excl * 100) : 0) . '%';
+            $overall_data[] = ($total_overall[$course->id] ? ($total_overall[$course->id] / $diff_total_excl ) : '0') ;
         }
         $data[] = $overall_data;
         return $data;
