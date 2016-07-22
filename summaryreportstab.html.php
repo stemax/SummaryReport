@@ -166,7 +166,7 @@ class JLMS_SummaryReports_html
                     <?php
                     $diff_total_excl = $total_staff - $total_excluded_staff;
                     foreach ($courses as $course) {
-                        echo '<th>' . ($total_overall[$course->id] ? ($total_overall[$course->id] / $diff_total_excl * 100) : 0) . '%</th>';
+                        echo '<th>' . ($total_overall[$course->id] ? (round($total_overall[$course->id] / $diff_total_excl * 100)) : 0) . '%</th>';
                     }
                     ?>
                 </tr>
