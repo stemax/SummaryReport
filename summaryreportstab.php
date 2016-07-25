@@ -309,13 +309,13 @@ class plgJlmsSummaryReportsTab extends JPlugin
         $users_count = count($users);
         $courses_count = count($courses);
 
-        $objPHPExcel->getProperties()->setCreator("Max Stemplevski")
-            ->setLastModifiedBy("Max Stemplevski")
-            ->setTitle("JLMS Test Document")
-            ->setSubject("Coyle JLMS Test Document")
-            ->setDescription("Coyle JLMS Test document for PHPExcel, generated using PHP classes.")
+        $objPHPExcel->getProperties()->setCreator("Coyle")
+            ->setLastModifiedBy("Coyle")
+            ->setTitle("Coyle JLMS Document")
+            ->setSubject("Coyle JLMS Document")
+            ->setDescription("Coyle JLMS document")
             ->setKeywords("office Coyle users results")
-            ->setCategory("Coyle test result file");
+            ->setCategory("Coyle result file");
 
         $objPHPExcel->setActiveSheetIndex(0)
             ->setCellValue('A1', 'Ref')
