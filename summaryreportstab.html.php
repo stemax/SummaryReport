@@ -49,10 +49,10 @@ class JLMS_SummaryReports_html
                         Status/Course
                     </th>
                     <th align="center">
-                        Department
+                        Organisation
                     </th>
                     <th align="center">
-                        Organisation
+                        Department
                     </th>
                     <th align="center">
                         Senior Manager

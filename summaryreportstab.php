@@ -329,8 +329,8 @@ class plgJlmsSummaryReportsTab extends JPlugin
         }
         $active_letter_index++;
         $objPHPExcel->setActiveSheetIndex(0)
-            ->setCellValue($first_letters[$active_letter_index++] . '1', 'Department')
             ->setCellValue($first_letters[$active_letter_index++] . '1', 'Organisation')
+            ->setCellValue($first_letters[$active_letter_index++] . '1', 'Department')
             //->setCellValue($first_letters[$active_letter_index++] . '1', 'MD')
             ->setCellValue($first_letters[$active_letter_index++] . '1', 'Senior Manager')
             //->setCellValue($first_letters[$active_letter_index++] . '1', 'Business')
