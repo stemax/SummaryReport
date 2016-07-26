@@ -15,6 +15,14 @@ class JLMS_SummaryReports_html
                 jQuery('#summary-report-download').on('click', set);
                 jQuery('#summary-report-search').on('click', unset);
                 jQuery('#limit_chzn').on('click', unset);
+                jQuery('#summary-report-form-action #course_name').on('change', submit_filter);
+                jQuery('#summary-report-form-action #ug_name').on('change', submit_filter);
+                jQuery('#summary-report-form-action #category_name').on('change', submit_filter);
+
+                function submit_filter() {
+                    unset();
+                    jQuery('#summary-report-form-action').submit();
+                };
                 function set() {
                     jQuery('#download-summary-report').attr('value', 'excel');
                 };
@@ -27,16 +35,20 @@ class JLMS_SummaryReports_html
         <h2>Summary statistics</h2>
         <form
             action="<?php echo sefRelToAbs($link); ?>"
-            method="post" id="report-form-action" name="reportForm">
+            method="post" id="summary-report-form-action" name="reportForm">
 
             <?php
             $filtertop = new \LMS\Widgets\Filters();
-            $filtertop->addFilter($pageNav->GetLimitBox($link));
-            $filtertop->addFilter('<button class="btn tip hasTooltip" id="summary-report-download" type="submit" title="Download summary report"><i class="icon-download"></i></button>');
-            $filtertop->addFilter('<button class="btn tip hasTooltip" id="summary-report-search" type="submit" title="' . JText::_('JSEARCH_FILTER_SUBMIT') . '"><i class="icon-search"></i></button>');
+            $filterbuttom = new \LMS\Widgets\Filters();
+            $filterbuttom->addFilter($pageNav->GetLimitBox($link));
+            $filterbuttom->addFilter('<button class="btn tip hasTooltip" id="summary-report-download" type="submit" title="Download summary report"><i class="icon-download"></i></button>');
+            //$filterbuttom->addFilter('<button class="btn tip hasTooltip" id="summary-report-search" type="submit" title="' . JText::_('JSEARCH_FILTER_SUBMIT') . '"><i class="icon-search"></i></button>');
             $filtertop->addFilter($lists['group']);
             $filtertop->addFilter($lists['course']);
+            $filtertop->addFilter($lists['category']);
+
             echo $filtertop;
+            echo $filterbuttom;
             ?>
 
             <table width="100%" cellpadding="0" cellspacing="0" border="0" class="table table-striped table-hover">

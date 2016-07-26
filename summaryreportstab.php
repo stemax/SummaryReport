@@ -52,9 +52,11 @@ class plgJlmsSummaryReportsTab extends JPlugin
         //Start:Summary data
         $ug_name_id = $app->getUserStateFromRequest("plgJlmsSummaryReportsTab.ug_name", 'ug_name', '', 'cmd');
         $course_name_id = $app->getUserStateFromRequest("plgJlmsSummaryReportsTab.course_name", 'course_name', '', 'cmd');
+        $category_name_id = $app->getUserStateFromRequest("plgJlmsSummaryReportsTab.category_name", 'category_name', '', 'cmd');
 
         $lists['group'] = mosHTML::selectList(self::getGroups(true, true), 'ug_name', 'class="inputbox" size="1" ', 'id', 'ug_name', $ug_name_id);;
         $lists['course'] = mosHTML::selectList(self::getCourses(true), 'course_name', 'class="inputbox" size="1" ', 'id', 'course_name', $course_name_id);;
+        $lists['category'] = mosHTML::selectList(self::getCategories(true), 'category_name', 'class="inputbox" size="1" ', 'id', 'category_name', $category_name_id);;
 
         $query = $db->getQuery(true);
         $query->select('u.username, u.name, u.id, ug.ug_name, sug.ug_name AS `subgroup_name`, mu.name AS `manager_name`')
@@ -246,7 +248,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
 
         if ($with_default_item) {
             $group_default = new stdClass();
-            $group_default->ug_name = 'Select group';
+            $group_default->ug_name = 'Filter by organization';
             $group_default->id = 0;
             return array_merge([$group_default], $groups);
         }
@@ -286,11 +288,43 @@ class plgJlmsSummaryReportsTab extends JPlugin
         }
         if ($with_default_item) {
             $course_default = new stdClass();
-            $course_default->course_name = 'Select course';
+            $course_default->course_name = 'Filter by course';
             $course_default->id = 0;
             return array_merge([$course_default], $courses);
         }
         return $courses;
+    }
+
+    /**
+     * Get LMS categories
+     *
+     * @param bool $with_default_item
+     *
+     * @return array
+     * @throws Exception
+     */
+    public function getCategories($with_default_item = false)
+    {
+        global $JLMS_DB;
+
+        $app = JFactory::getApplication();
+        $category_name_id = $app->getUserStateFromRequest("plgJlmsSummaryReportsTab.category_name", 'category_name', '', 'cmd');
+
+        $query = $JLMS_DB->getQuery(true);
+        $query->select('c_category AS `category_name`,id')->from('#__lms_course_cats')->where('restricted=0');
+        if ($category_name_id && !$with_default_item) {
+            $query->where('id=' . $category_name_id);
+        }
+        $JLMS_DB->setQuery($query);
+        $categories = (array)$JLMS_DB->loadObjectList();
+
+        if ($with_default_item) {
+            $course_default = new stdClass();
+            $course_default->category_name = 'Filter by category';
+            $course_default->id = 0;
+            return array_merge([$course_default], $categories);
+        }
+        return $categories;
     }
 
     /***
@@ -488,9 +522,9 @@ class plgJlmsSummaryReportsTab extends JPlugin
         //percent_format
         $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai + 4] . ($fai + 2) . ':' . $first_letters[$llai] . ($lai + count($groups_results) + 1))
             ->getNumberFormat()->applyFromArray(
-                array(
+                [
                     'code' => PHPExcel_Style_NumberFormat::FORMAT_PERCENTAGE
-                )
+                ]
             );
 
         //courses header color
@@ -532,9 +566,9 @@ class plgJlmsSummaryReportsTab extends JPlugin
                 //percent_format
                 $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai + 4] . ($fai + 4) . ':' . $first_letters[$llai] . ($lai + count($parent_group->child_groups) + 1))
                     ->getNumberFormat()->applyFromArray(
-                        array(
+                        [
                             'code' => PHPExcel_Style_NumberFormat::FORMAT_PERCENTAGE
-                        )
+                        ]
                     );
 
                 //course completed condition
@@ -591,6 +625,15 @@ class plgJlmsSummaryReportsTab extends JPlugin
         die;
     }
 
+    /**
+     * Generate table for total results
+     *
+     * @param $results
+     * @param $courses
+     * @param string $caption
+     *
+     * @return array
+     */
     static function generateTotalTable($results, $courses, $caption = '')
     {
         $data = [];
