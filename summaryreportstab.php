@@ -269,10 +269,16 @@ class plgJlmsSummaryReportsTab extends JPlugin
         $app = JFactory::getApplication();
         $course_name_id = $app->getUserStateFromRequest("plgJlmsSummaryReportsTab.course_name", 'course_name', '', 'cmd');
 
+        $category_name_id = $app->getUserStateFromRequest("plgJlmsSummaryReportsTab.category_name", 'category_name', '', 'cmd');
+
         $query = $JLMS_DB->getQuery(true);
         $query->select('course_name,id')->from('#__lms_courses')->where('id IN (' . implode(',', self::$allowed_courses_ids) . ')');
         if ($course_name_id && !$with_default_item) {
             $query->where('id=' . $course_name_id);
+        }
+        if ($category_name_id)
+        {
+            $query->where('cat_id=' . $category_name_id);
         }
         $JLMS_DB->setQuery($query);
         $courses = (array)$JLMS_DB->loadObjectList();

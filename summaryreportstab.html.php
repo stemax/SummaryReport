@@ -42,7 +42,6 @@ class JLMS_SummaryReports_html
             $filterbuttom = new \LMS\Widgets\Filters();
             $filterbuttom->addFilter($pageNav->GetLimitBox($link));
             $filterbuttom->addFilter('<button class="btn tip hasTooltip" id="summary-report-download" type="submit" title="Download summary report"><i class="icon-download"></i></button>');
-            //$filterbuttom->addFilter('<button class="btn tip hasTooltip" id="summary-report-search" type="submit" title="' . JText::_('JSEARCH_FILTER_SUBMIT') . '"><i class="icon-search"></i></button>');
             $filtertop->addFilter($lists['group']);
             $filtertop->addFilter($lists['course']);
             $filtertop->addFilter($lists['category']);
