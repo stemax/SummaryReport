@@ -276,8 +276,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
         if ($course_name_id && !$with_default_item) {
             $query->where('id=' . $course_name_id);
         }
-        if ($category_name_id)
-        {
+        if ($category_name_id) {
             $query->where('cat_id=' . $category_name_id);
         }
         $JLMS_DB->setQuery($query);
@@ -663,7 +662,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
             $show_data[] = '';
             $show_data[] = $result->ug_name;
             foreach ($courses as $course) {
-                $show_data[] = ($result->total[$course->id] ? ($result->total[$course->id] / $diff_total_excl ) : '0') ;
+                $show_data[] = ($result->total[$course->id] ? ($result->total[$course->id] / $diff_total_excl) : '0');
                 $total_overall[$course->id] += $result->total[$course->id];
             }
             $data[] = $show_data;
@@ -676,7 +675,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
 
         $diff_total_excl = $total_staff - $total_excluded_staff;
         foreach ($courses as $course) {
-            $overall_data[] = ($total_overall[$course->id] ? ($total_overall[$course->id] / $diff_total_excl ) : '0') ;
+            $overall_data[] = ($total_overall[$course->id] ? ($total_overall[$course->id] / $diff_total_excl) : '0');
         }
         $data[] = $overall_data;
         return $data;
