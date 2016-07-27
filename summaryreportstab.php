@@ -7,6 +7,8 @@ class plgJlmsSummaryReportsTab extends JPlugin
 {
     protected $autoloadLanguage = true;
     static private $allowed_courses_ids = [];
+    static private $only_admin_groups = [];
+    static private $only_seo_users = [];
 
     public function __construct(&$subject, $config = [])
     {
@@ -26,7 +28,8 @@ class plgJlmsSummaryReportsTab extends JPlugin
     public function onRenderTabHomepage()
     {
         $JLMS_ACL = JLMSFactory::getACL();
-        if ($JLMS_ACL->isAdmin()) {
+
+        if ($JLMS_ACL->isAdmin() || $JLMS_ACL->_role_type == 3 || $JLMS_ACL->_role_type == 4) {
             $titleTab = $this->params->get('title_tab', 'Summary Report');
             echo JHtml::_('bootstrap.addTab', 'JLMS', 'jlmsTabSummaryReport', JText::_($titleTab, true));
             if (sizeof(self::$allowed_courses_ids)) {
@@ -45,18 +48,52 @@ class plgJlmsSummaryReportsTab extends JPlugin
      */
     public function JLMS_SummaryReportScorm()
     {
+        global $JLMS_CONFIG;
+        $JLMS_ACL = JLMSFactory::getACL();
         $app = JFactory::getApplication();
         $db = JFactory::getDbo();
-        $lists = [];
+        $user = JFactory::getUser();
+        $lists = $only_in_groups = [];
 
         //Start:Summary data
         $ug_name_id = $app->getUserStateFromRequest("plgJlmsSummaryReportsTab.ug_name", 'ug_name', '', 'cmd');
         $course_name_id = $app->getUserStateFromRequest("plgJlmsSummaryReportsTab.course_name", 'course_name', '', 'cmd');
         $category_name_id = $app->getUserStateFromRequest("plgJlmsSummaryReportsTab.category_name", 'category_name', '', 'cmd');
 
-        $lists['group'] = mosHTML::selectList(self::getGroups(true, true), 'ug_name', 'class="inputbox" size="1" ', 'id', 'ug_name', $ug_name_id);;
-        $lists['course'] = mosHTML::selectList(self::getCourses(true), 'course_name', 'class="inputbox" size="1" ', 'id', 'course_name', $course_name_id);;
-        $lists['category'] = mosHTML::selectList(self::getCategories(true), 'category_name', 'class="inputbox" size="1" ', 'id', 'category_name', $category_name_id);;
+        if ($JLMS_ACL->isAdmin() && $JLMS_CONFIG->get('use_global_groups', 1) && $JLMS_ACL->CheckPermissions('advanced', 'assigned_groups_only')) {
+            $query = $db->getQuery(true);
+            $query->select('lu.id')
+                ->from('#__lms_usergroups AS lu')
+                ->innerJoin('#__lms_user_assign_groups AS luag ON luag.group_id =  lu.id')
+                ->where("luag.user_id = " . $user->id);
+            $db->setQuery($query);
+            $only_in_groups = $db->loadColumn();
+            self::$only_admin_groups = $only_in_groups;
+        }
+
+        if ($JLMS_ACL->_role_type == 3 || $JLMS_ACL->_role_type == 4) {
+            $query = $db->getQuery(true);
+            $query->select('lu.id')
+                ->from('#__lms_usergroups AS lu')
+                ->innerJoin('#__lms_user_assign_groups AS luag ON luag.group_id =  lu.id')
+                ->where("luag.user_id = " . $user->id);
+            $db->setQuery($query);
+            $only_in_groups = $db->loadColumn();
+            self::$only_admin_groups = $only_in_groups;
+            if (!sizeof(self::$only_admin_groups)) {
+                $query = $db->getQuery(true);
+                $query->select('p.user_id')
+                    ->from('#__lms_user_parents AS p')
+                    ->where("p.parent_id = " . $user->id);
+                $db->setQuery($query);
+                $only_users = $db->loadColumn();
+                self::$only_seo_users = $only_users;
+            }
+        }
+
+        $lists['group'] = (sizeof(self::$only_seo_users)) ? '' : mosHTML::selectList(self::getGroups(true, true), 'ug_name', 'class="inputbox" size="1" ', 'id', 'ug_name', $ug_name_id);
+        $lists['course'] = mosHTML::selectList(self::getCourses(true), 'course_name', 'class="inputbox" size="1" ', 'id', 'course_name', $course_name_id);
+        $lists['category'] = mosHTML::selectList(self::getCategories(true), 'category_name', 'class="inputbox" size="1" ', 'id', 'category_name', $category_name_id);
 
         $query = $db->getQuery(true);
         $query->select('u.username, u.name, u.id, ug.ug_name, sug.ug_name AS `subgroup_name`, mu.name AS `manager_name`')
@@ -67,11 +104,16 @@ class plgJlmsSummaryReportsTab extends JPlugin
             ->leftJoin('#__lms_usergroups AS sug ON sug.id = gg.subgroup1_id')
             ->leftJoin('#__lms_user_parents AS p ON p.user_id = u.id')
             ->leftJoin('#__users AS mu ON mu.id = p.parent_id')
-            //TODO filters by course and group
             ->group('u.id')
             ->order('u.username');
         if ($ug_name_id) {
             $query->where('gg.group_id=' . $ug_name_id);
+        }
+        if (sizeof(self::$only_admin_groups)) {
+            $query->where('gg.group_id IN (' . implode(',', self::$only_admin_groups) . ')');
+        }
+        if (sizeof(self::$only_seo_users)) {
+            $query->where('u.id IN (' . implode(',', self::$only_seo_users) . ')');
         }
         $db->setQuery($query);
         $users = $db->LoadObjectList();
@@ -228,7 +270,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
     public function getGroups($with_default_item = false, $only_parents = false, $parent_id = false)
     {
         global $JLMS_DB;
-
+        $JLMS_ACL = JLMSFactory::getACL();
         $app = JFactory::getApplication();
         $ug_name_id = $app->getUserStateFromRequest("plgJlmsSummaryReportsTab.ug_name", 'ug_name', '', 'cmd');
 
@@ -239,6 +281,14 @@ class plgJlmsSummaryReportsTab extends JPlugin
         }
         if ($parent_id) {
             $query->where('parent_id=' . $parent_id);
+        } else {
+            if (sizeof(self::$only_admin_groups)) {
+                $query->where('id IN (' . implode(',', self::$only_admin_groups) . ')');
+            } else if (sizeof(self::$only_seo_users)) {
+                $query->where('id=0'); //skip
+            } else if (!$JLMS_ACL->isAdmin()) {
+                $query->where('id=0'); //skip
+            }
         }
         if ($ug_name_id && !$with_default_item && !$parent_id) {
             $query->where('id=' . $ug_name_id);
