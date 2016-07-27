@@ -316,7 +316,10 @@ class plgJlmsSummaryReportsTab extends JPlugin
         $category_name_id = $app->getUserStateFromRequest("plgJlmsSummaryReportsTab.category_name", 'category_name', '', 'cmd');
 
         $query = $JLMS_DB->getQuery(true);
-        $query->select('c_category AS `category_name`,id')->from('#__lms_course_cats')->where('restricted=0');
+        $query->select('c_category AS `category_name`,id')
+            ->from('#__lms_course_cats')
+            ->where('restricted=0')
+            ->where('id in (SELECT DISTINCT(`cat_id`) FROM `gn4wb_lms_courses` WHERE id IN (' . implode(',', self::$allowed_courses_ids) . '))');
         if ($category_name_id && !$with_default_item) {
             $query->where('id=' . $category_name_id);
         }
