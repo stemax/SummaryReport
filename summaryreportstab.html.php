@@ -9,6 +9,8 @@ class JLMS_SummaryReports_html
     {
         global $Itemid;
         $link = "index.php?option=com_joomla_lms&task=default&Itemid=$Itemid&activetab=jlmsTabSummaryReport";
+        $app = JFactory::getApplication();
+        $ug_name_id = $app->getUserStateFromRequest("plgJlmsSummaryReportsTab.ug_name", 'ug_name', '', 'cmd');
         ?>
         <script type="text/javascript">
             jQuery(function () {
@@ -116,7 +118,7 @@ class JLMS_SummaryReports_html
             <input type="hidden" id="download-summary-report" name="download-summary-report" value=""/>
         </form>
         <?php
-        self::showTotalTable($parent_groups, $courses, 'Overall site statistics');
+        if (!$ug_name_id) self::showTotalTable($parent_groups, $courses, 'Overall site statistics');
         foreach ($parent_groups as $parent_group) {
             if (isset($parent_group->child_groups)) {
                 self::showTotalTable($parent_group->child_groups, $courses, $parent_group->ug_name);
@@ -160,7 +162,7 @@ class JLMS_SummaryReports_html
                         <td><?= $result->ug_name; ?></td>
                         <?php
                         foreach ($courses as $course) {
-                            echo '<td>' . ($result->total[$course->id] ? ($result->total[$course->id] / $diff_total_excl * 100) : 0) . '%</td>';
+                            echo '<td>' . ($result->total[$course->id] ? round(($result->total[$course->id] / $diff_total_excl * 100)) : 0) . '%</td>';
                             $total_overall[$course->id] += $result->total[$course->id];
                         }
                         ?>
