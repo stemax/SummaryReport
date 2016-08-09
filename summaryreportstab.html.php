@@ -139,7 +139,6 @@ class JLMS_SummaryReports_html
             <table width="100%" cellpadding="0" cellspacing="0" border="0" class="table table-striped table-hover">
                 <tr>
                     <th>Staff</th>
-                    <th>Excluded Staff</th>
                     <th></th>
                     <th>Group/Course</th>
                     <?php
@@ -155,7 +154,7 @@ class JLMS_SummaryReports_html
                         <?php
                         $total_staff += $result->total_users;
                         $total_excluded_staff += $result->total_blocked_users;
-                        echo '<td>' . $result->total_users . '</td><td>' . $result->total_blocked_users . '</td>';
+                        echo '<td>' . $result->total_users . '</td>';
                         $diff_total_excl = $result->total_users - $result->total_blocked_users;
                         ?>
                         <td></td>
@@ -173,7 +172,6 @@ class JLMS_SummaryReports_html
 
                 <tr>
                     <th><?= $total_staff; ?></th>
-                    <th><?= $total_excluded_staff; ?></th>
                     <td></td>
                     <th>Overall</th>
                     <?php
