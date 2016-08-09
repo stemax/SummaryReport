@@ -595,7 +595,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
         $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai + 4] . ($fai + 2) . ':' . $first_letters[$llai] . ($lai + count($groups_results)))->applyFromArray($styleCourseResultsBorder);
 
         //staff border
-        $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai] . ($fai + 2) . ':' . $first_letters[$lfai + 1] . ($lai + count($groups_results)))->applyFromArray($styleThickBrownBorderOutline);
+        $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai] . ($fai + 2) . ':' . $first_letters[$lfai] . ($lai + count($groups_results)))->applyFromArray($styleThickBrownBorderOutline);
 
         //staff conditional
         $conditionalStyles = $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai + 1] . ($fai + 2) . ':' . $first_letters[$lfai + 1] . ($lai + count($groups_results)))->getConditionalStyles();
@@ -642,7 +642,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
                 $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai + 4] . ($fai + 4) . ':' . $first_letters[$llai] . ($lai + count($parent_group->child_groups)))->applyFromArray($styleCourseResultsBorder);
 
                 //staff border
-                $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai] . ($fai + 4) . ':' . $first_letters[$lfai + 1] . ($lai + count($parent_group->child_groups)))->applyFromArray($styleThickBrownBorderOutline);
+                $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai] . ($fai + 4) . ':' . $first_letters[$lfai] . ($lai + count($parent_group->child_groups)))->applyFromArray($styleThickBrownBorderOutline);
 
                 //staff conditional
                 $conditionalStyles = $objPHPExcel->getActiveSheet()->getStyle($first_letters[$lfai + 1] . ($fai + 4) . ':' . $first_letters[$lfai + 1] . ($lai + count($parent_group->child_groups)))->getConditionalStyles();
@@ -700,7 +700,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
             $total_overall[$course->id] = 0;
         }
         $data[] = ['', '', '', $caption, '', ''];
-        $headers = ['Total Staff', 'Excluded Staff', ' ', ' '];
+        $headers = ['Total Staff', ' ', ' ', ' '];
         foreach ($courses as $course) {
             $headers[] = $course->course_name;
         }
@@ -710,7 +710,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
             $total_staff += $result->total_users;
             $total_excluded_staff += $result->total_blocked_users;
             $show_data[] = (string)$result->total_users;
-            $show_data[] = (string)$result->total_blocked_users;
+            $show_data[] = '';
             $diff_total_excl = $result->total_users - $result->total_blocked_users;
             $show_data[] = '';
             $show_data[] = $result->ug_name;
@@ -722,7 +722,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
         }
         $overall_data = [];
         $overall_data[] = (string)$total_staff;
-        $overall_data[] = (string)$total_excluded_staff;
+        $overall_data[] = '';
         $overall_data[] = '';
         $overall_data[] = 'Overall';
 
