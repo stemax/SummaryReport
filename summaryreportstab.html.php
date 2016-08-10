@@ -154,8 +154,8 @@ class JLMS_SummaryReports_html
                         <?php
                         $total_staff += $result->total_users;
                         $total_excluded_staff += $result->total_blocked_users;
-                        echo '<td>' . $result->total_users . '</td>';
                         $diff_total_excl = $result->total_users - $result->total_blocked_users;
+                        echo '<td>' . $diff_total_excl . '</td>';
                         ?>
                         <td></td>
                         <td><?= $result->ug_name; ?></td>
@@ -171,7 +171,7 @@ class JLMS_SummaryReports_html
                 ?>
 
                 <tr>
-                    <th><?= $total_staff; ?></th>
+                    <th><?= $total_staff - $total_excluded_staff; ?></th>
                     <td></td>
                     <th>Overall</th>
                     <?php

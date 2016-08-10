@@ -115,6 +115,8 @@ class plgJlmsSummaryReportsTab extends JPlugin
         if (sizeof(self::$only_seo_users)) {
             $query->where('u.id IN (' . implode(',', self::$only_seo_users) . ')');
         }
+        $query->where('u.block=0');
+
         $db->setQuery($query);
         $users = $db->LoadObjectList();
 
@@ -709,9 +711,9 @@ class plgJlmsSummaryReportsTab extends JPlugin
             $show_data = [];
             $total_staff += $result->total_users;
             $total_excluded_staff += $result->total_blocked_users;
-            $show_data[] = (string)$result->total_users;
-            $show_data[] = '';
             $diff_total_excl = $result->total_users - $result->total_blocked_users;
+            $show_data[] = (string)$diff_total_excl;
+            $show_data[] = '';
             $show_data[] = '';
             $show_data[] = $result->ug_name;
             foreach ($courses as $course) {
@@ -721,7 +723,7 @@ class plgJlmsSummaryReportsTab extends JPlugin
             $data[] = $show_data;
         }
         $overall_data = [];
-        $overall_data[] = (string)$total_staff;
+        $overall_data[] = (string)($total_staff-$total_excluded_staff);
         $overall_data[] = '';
         $overall_data[] = '';
         $overall_data[] = 'Overall';
